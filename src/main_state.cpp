@@ -19,6 +19,7 @@
 
 
 #include "game.h"
+#include "fight.h"
 
 #include "main_state.h"
 
@@ -64,6 +65,8 @@ void MainState::shutdown() {
 void MainState::run() {
 	lairAssert(_initialized);
 
+	Fight fight(_game->log(), nullptr);
+	unsigned target = 0;
 	_running = true;
 
 	init();
@@ -75,6 +78,13 @@ void MainState::run() {
 	while(_running) {
 		switch(_loop.nextEvent()) {
 		case InterpLoop::Tick:
+			if (fight.tick_fight())
+			{
+				fight.can_haz(PUNCH, target);
+				target = (target+1)%PARTY_SIZE;
+			}
+			if (fight.game_over())
+				_running = false;
 			updateTick();
 			break;
 		case InterpLoop::Frame:
