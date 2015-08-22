@@ -1,0 +1,51 @@
+You play as a (JRPG-style) boss, and fight against a team of Player Characters.
+The goal is to score as many Total Party Kill (or Wipes) as you can, and increase the enemy player's Frustration Counter as high as possible.
+Each time to wipe the floor with him, the player will reload the game, prepare himself better, and try again.
+-> The player will focus on buying/training abilities that would have let him win the previous fight (counters against attacks you used, etc.).
+
+> Basic attacks :
+- Deals good damage against a PC of your choice. Does not leave you vulnerable.
+-> Deals elemental damage, with an option to change the current element.
+* Basic attack
+* Elemental attack (does more damage, unless the PCs have a matching shield buff or stuff)
+* Switch current element (makes you vulnerable to oposite element)
++> The PCs will figure out the element thing eventually.
+
+> Spells :
+- Can deal massive damage.
+* Foo storm : Elemental AoE damage.
+* Foo strike : Elemental nuke.
+* Vorpal sword : Low-or-null damage with a chance of instakill.
+- Can inflict Crowd Control on PCs.
+* Crippling strike : Good damage with a chance of physical disable.
+* Soul drain : Leeches mana from enemy spellcasters, with a chance of magical disable.
+* Mud pit : Slows down all the PCs, making them play less frequently.
+* Dispel magic : Removes all buffs from one PC.
+- Lets you spawn adds with various abilities (max. 2-5? active summons) :
+* Summon sprites (heals you over time, very weak)
+* Summon mageling (will cast team buffs and offensive spells, tanks moderately, useful in combos)
+* Summon Tomberry (sacrifices your HP, instakill a player unless killed under X turns)
++> Will always work the first time around.
++> Is VERY vulnerable to an element of your choice (the player will eventually figure it out).
+-> Spells leave you vulnerable to a counter-attack. (Lower shields to fire, makes you sensitive to oposite element, etc.)
+-> You should make sure the PCs cannot retaliate. (Counters in CD, defensive buffs inactive, etc.)
+
+> QTEs :
+- Overpowered at start, they become less efficient with each use - as the player learns them.
+- Once the player is good enough, he may "Perfect!" them, taking no damage and hurting you instead.
+-> Triggered by tier changes ?
+- Tradeoff between damage/cooldown?/hardness.
+
+> Tier specials :
+- Come up with something (each new phases brings up a new twist in your favor)
+
+> Scan :
+- Check the PCs equipment, inventory, HP, mana, and whatnot.
+-> After each TPK, the player will come back with :
+* MOAR EXP : higher base stats (HP, mana), more powerful spells/combos.
+* Better armor/staffs/swords : higher combat stats (damage, resistance).
+* Enchanted stuff : elemental damages or resistances, passive, regen, etc.
+* Trinkets : elemental immunities (prioritizing what hurt them most before).
+* Consumables : frustrated players will eventually get into the fight with 300 potions and half as many phœnix's.
+* Improved knowledge of your attacks, strats, QTEs and tier powers, depending on what you deployed previously.
++> Unless you're doing too well or are playing on hardmode, in which case the player will Google the fuck out of you.
