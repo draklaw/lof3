@@ -1,7 +1,7 @@
 ##
 ##  Copyright (C) 2015 Simon Boyé
 ##
-##  This file is part of lair.
+##  This file is part of lof3.
 ##
 ##  lair is free software: you can redistribute it and/or modify it
 ##  under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@
 
 cmake_minimum_required(VERSION 2.8.12.1)
 
-project(noname)
+project(lof3)
 
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
@@ -44,7 +44,7 @@ include_directories(
 	"${LAIR_INCLUDE_DIR}"
 )
 
-add_executable(noname
+add_executable(lof3
 	src/game_state.cpp
 	src/game.cpp
 	src/main_state.cpp
@@ -53,7 +53,7 @@ add_executable(noname
 
 add_definitions(-D "'DATA_DIR=\"${CMAKE_CURRENT_SOURCE_DIR}/assets\"'")
 
-target_link_libraries(noname
+target_link_libraries(lof3
 	${LAIR_LIBRARY}
 	SDL2_image
 	"${GLEW_LIBRARIES}"
