@@ -74,7 +74,7 @@ protected:
 	bool       _running;
 	InterpLoop _loop;
 
-	Sprite*    _bgSprite;
+	Sprite     _bgSprite;
 
 	EntityRef  _bg;
 };

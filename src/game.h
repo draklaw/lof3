@@ -73,16 +73,19 @@ protected:
 
 	Path          _dataPath;
 
-	SysModule*    _sys;
+	std::unique_ptr<SysModule>
+	              _sys;
 	Window*       _window;
 
-	RenderModule* _renderModule;
+	std::unique_ptr<RenderModule>
+	              _renderModule;
 	Renderer*     _renderer;
 
 	GameState*    _nextState;
 	GameState*    _currentState;
 
-	std::unique_ptr<MainState> _mainState;
+	std::unique_ptr<MainState>
+	              _mainState;
 };
 
 

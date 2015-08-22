@@ -46,7 +46,11 @@ void MainState::initialize() {
 
 	layoutScreen();
 
-	_bgSprite = _game->renderer()->getSprite("bg.jpg");
+	_game->renderer()->preloadTexture("bg.jpg", Texture::NEAREST | Texture::CLAMP);
+	Texture* bgTexture = _game->renderer()->getTexture(
+	            "bg.jpg", Texture::NEAREST | Texture::CLAMP);
+	_bgSprite = Sprite(bgTexture);
+	log().warning("BG: ", _bgSprite.width(), "x", _bgSprite.height());
 
 	_initialized = true;
 }
@@ -87,8 +91,8 @@ void MainState::quit() {
 
 
 void MainState::layoutScreen() {
-	unsigned w = _game->window()->width();
-	unsigned h = _game->window()->height();
+	int w = _game->window()->width();
+	int h = _game->window()->height();
 	_camera.setViewBox(Box3(
 		Vector3(  0, -640 * h / w, -1),
 		Vector3(640,            0,  1)
@@ -101,7 +105,9 @@ void MainState::init() {
 
 	_bg = _entities.createEntity(_entities.root(), "bg");
 	_sprites.addComponent(_bg);
-	_bg.sprite()->setSprite(_bgSprite);
+	_bg.sprite()->setSprite(&_bgSprite);
+
+	log().warning("Bg transform:\n", _bg.transform().matrix());
 }
 
 

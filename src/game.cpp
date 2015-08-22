@@ -45,7 +45,7 @@ Game::Game()
       _nextState(nullptr),
       _currentState(nullptr),
 
-      _mainState(new MainState(this)) {
+      _mainState(nullptr) {
 	_mlogger.addBackend(&_logBackend);
 	log().log("Starting game...");
 
@@ -70,7 +70,7 @@ Path Game::dataPath() const {
 
 
 SysModule* Game::sys() {
-	return _sys;
+	return _sys.get();
 }
 
 
@@ -80,7 +80,7 @@ Window* Game::window() {
 
 
 RenderModule* Game::renderModule() {
-	return _renderModule;
+	return _renderModule.get();
 }
 
 
@@ -90,31 +90,34 @@ Renderer* Game::renderer() {
 
 
 void Game::initialize() {
-	_sys = new SysModule(&_mlogger, DEFAULT_LOG_LEVEL);
+	_sys.reset(new SysModule(&_mlogger, DEFAULT_LOG_LEVEL));
 	_sys->initialize();
 	_sys->onQuit = std::bind(&Game::quit, this);
 	_sys->loader().setNThread(1);
+	_sys->loader().setBasePath(dataPath());
 
-	_window = _sys->createWindow("noname", 640, 360);
+	_window = _sys->createWindow("lof3", 640, 360);
 	log().info("VSync: ", _sys->isVSyncEnabled()? "on": "off");
 
-	_renderModule = new RenderModule(_sys, &_mlogger, DEFAULT_LOG_LEVEL);
+	_renderModule.reset(new RenderModule(sys(), &_mlogger, DEFAULT_LOG_LEVEL));
 	_renderModule->initialize();
 	_renderer = _renderModule->createRenderer();
 
+	_mainState.reset(new MainState(this));
 	_mainState->initialize();
 }
 
 
 void Game::shutdown() {
 	_mainState->shutdown();
+	_mainState.reset();
 
 	_renderModule->shutdown();
-	delete _renderModule;
+	_renderModule.reset();
 
 	_window->destroy();
 	_sys->shutdown();
-	delete _sys;
+	_sys.reset();
 }
 
 
