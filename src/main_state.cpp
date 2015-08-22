@@ -18,6 +18,7 @@
 //
 
 
+#include "font.h"
 #include "menu.h"
 #include "game.h"
 
@@ -48,6 +49,10 @@ void MainState::initialize() {
 	layoutScreen();
 
 
+	_fontJson = _game->sys()->loader().getJson("8-bit_operator+_regular_23.json");
+	_fontTex  = _game->renderer()->getTexture(_fontJson["file"].asString());
+	_font.reset(new Font(_fontJson, _fontTex));
+
 	Texture* bgTexture = _game->renderer()->getTexture(
 	            "bg.jpg", Texture::NEAREST | Texture::CLAMP);
 	_bgSprite = Sprite(bgTexture);
@@ -58,7 +63,7 @@ void MainState::initialize() {
 
 
 	_menu.reset(new Menu(&_menuBgSprite, Vector2(256, 256)));
-	_menu->show(Vector3(0, 0, 0));
+	_menu->show(Vector3(64, -64, 0));
 
 	_initialized = true;
 }
@@ -140,6 +145,8 @@ void MainState::updateFrame() {
 	_sprites.render(_loop.frameInterp(), _camera);
 
 	_menu->render(_game->renderer());
+
+	_font->render(_game->renderer(), Vector3(64, -64, .99), "Test aoeuhtns. !?");
 
 	_game->renderer()->spriteShader()->use();
 	_game->renderer()->spriteShader()->setTextureUnit(0);

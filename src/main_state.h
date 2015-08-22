@@ -41,6 +41,7 @@ using namespace lair;
 
 class Game;
 
+class Font;
 class Menu;
 
 
@@ -72,19 +73,24 @@ protected:
 
 	OrthographicCamera _camera;
 
-	bool       _initialized;
-	bool       _running;
-	InterpLoop _loop;
-	int64      _fpsTime;
-	unsigned   _fpsCount;
+	bool        _initialized;
+	bool        _running;
+	InterpLoop  _loop;
+	int64       _fpsTime;
+	unsigned    _fpsCount;
 
-	Sprite     _bgSprite;
-	Sprite     _menuBgSprite;
+	Texture*    _fontTex;
+	Json::Value _fontJson;
+	std::unique_ptr<Font>
+	            _font;
 
-	EntityRef  _bg;
+	Sprite      _bgSprite;
+	Sprite      _menuBgSprite;
+
+	EntityRef   _bg;
 
 	std::unique_ptr<Menu>
-	           _menu;
+	            _menu;
 };
 
 

@@ -46,6 +46,7 @@ include_directories(
 
 add_executable(lof3
 	src/frame.cpp
+	src/font.cpp
 	src/menu.cpp
 	src/game.cpp
 	src/main_state.cpp
