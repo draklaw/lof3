@@ -7,6 +7,8 @@
 
 #include <lair/utils/interp_loop.h>
 
+#include <lair/render_gl2/orthographic_camera.h>
+
 #include <lair/ec/entity.h>
 #include <lair/ec/entity_manager.h>
 #include <lair/ec/sprite_component.h>
@@ -31,6 +33,10 @@ public:
 	virtual void run();
 	virtual void quit();
 
+	void layoutScreen();
+
+	void init();
+
 	void updateTick();
 	void updateFrame();
 
@@ -42,8 +48,15 @@ protected:
 	EntityManager          _entities;
 	SpriteComponentManager _sprites;
 
+	OrthographicCamera _camera;
+
+	bool       _initialized;
 	bool       _running;
 	InterpLoop _loop;
+
+	Sprite*    _bgSprite;
+
+	EntityRef  _bg;
 };
 
 

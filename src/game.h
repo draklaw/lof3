@@ -53,10 +53,10 @@ protected:
 
 	Path          _dataPath;
 
-	SysModule     _sys;
+	SysModule*    _sys;
 	Window*       _window;
 
-	RenderModule  _renderModule;
+	RenderModule* _renderModule;
 	Renderer*     _renderer;
 
 	GameState*    _nextState;
