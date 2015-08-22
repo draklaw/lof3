@@ -20,6 +20,9 @@
 
 #include "fight.h"
 
+// Hard-coded data
+unsigned ClassDPS[] = { 4, 1, 2, 5 };
+
 Fight::Fight(Logger& logger, void* knowledge)
 : _logger(&logger),
   party({
@@ -65,7 +68,7 @@ bool Fight::game_over ()
 
 	bool survivors = false;
 	for (unsigned i = 0 ; i < PARTY_SIZE ; i++)
-		if (!party[i].status[DEAD])
+		if (party[i].hp != 0)
 			survivors = true;
 
 	if (!survivors)
@@ -98,7 +101,7 @@ void Fight::play_party (unsigned character)
 	unsigned c = character;
 
 	// Attak the boss.
-	log().log(c, " says : \"I smite thee, evil one !\"");
+	log().log("Player ", c, " says : \"I smite thee, evil one !\"");
 	damage (boss.hp, 42);
 
 	// Reset initiative.
@@ -123,6 +126,8 @@ bool Fight::damage (unsigned& hitpoints, unsigned amount)
 		hitpoints -= amount;
 	else
 		hitpoints = 0;
+
+	log().log("HP : ", hitpoints, "(-", amount, ")");
 
 	return hitpoints == 0;	
 }

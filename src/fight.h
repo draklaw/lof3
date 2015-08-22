@@ -32,8 +32,8 @@ using namespace lair;
 #define PARTY_SIZE 4
 
 enum Class { FIGHTER, HEALER, WIZARD, NINJA };
-enum Element { NONE, FIRE, WATER, EARTH, AIR, NB_ELEMS };
-enum Status { NORMAL, SHIELD, SLOW, DISABLE, SILENCE, DEAD, NB_STATUS };
+enum Element { NONE, FIRE, ICE, SPARK, ACID, NB_ELEMS };
+enum Status { NORMAL, SHIELD, SLOW, DISABLE, SILENCE, NB_STATUS };
 enum Spell { SMITE, HEAL, REZ, NUKES,
 	AOES = NUKES+NB_ELEMS, SHIELDS = AOES+NB_ELEMS, NB_SPELLS = SHIELDS+NB_ELEMS
 };
@@ -48,7 +48,7 @@ struct PC {
 	unsigned hp;                   // Health
 	unsigned mp;                   // Mana
 	unsigned resists[NB_ELEMS];    // Current elemental resistances
-	bool status[NB_STATUS];     // Active (de)buffs
+	bool status[NB_STATUS];        // Active (de)buffs
 	unsigned cooldowns[NB_SPELLS]; // Spell cooldowns
 	unsigned init;                 // Time to initiative
 };
@@ -61,6 +61,10 @@ struct Boss {
 
 class Fight {
 public:
+	// Party and boss stats
+	PC party[PARTY_SIZE];
+	Boss boss;
+
 	// Engage a fresh fight using NULL knowledge.
 	Fight(Logger& logger, void* knowledge);
 	~Fight();
@@ -77,9 +81,6 @@ public:
 private:
 	Logger _logger;
 	Logger& log();
-
-	PC party[PARTY_SIZE];
-	Boss boss;
 
 	// Play as one of the PCs.
 	void play_party (unsigned character);
