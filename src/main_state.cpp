@@ -18,6 +18,7 @@
 //
 
 
+#include "menu.h"
 #include "game.h"
 
 #include "main_state.h"
@@ -46,17 +47,26 @@ void MainState::initialize() {
 
 	layoutScreen();
 
-	_game->renderer()->preloadTexture("bg.jpg", Texture::NEAREST | Texture::CLAMP);
+
 	Texture* bgTexture = _game->renderer()->getTexture(
 	            "bg.jpg", Texture::NEAREST | Texture::CLAMP);
 	_bgSprite = Sprite(bgTexture);
-	log().warning("BG: ", _bgSprite.width(), "x", _bgSprite.height());
+
+	Texture* menuTexture = _game->renderer()->getTexture(
+	            "menu.png", Texture::NEAREST | Texture::REPEAT);
+	_menuBgSprite = Sprite(menuTexture, 3, 3);
+
+
+	_menu.reset(new Menu(&_menuBgSprite, Vector2(256, 256)));
+	_menu->show(Vector3(0, 0, 0));
 
 	_initialized = true;
 }
 
 
 void MainState::shutdown() {
+	_menu.reset();
+
 	_initialized = false;
 }
 
@@ -108,8 +118,11 @@ void MainState::init() {
 	_bg = _entities.createEntity(_entities.root(), "bg");
 	_sprites.addComponent(_bg);
 	_bg.sprite()->setSprite(&_bgSprite);
+	_bg.setTransform(Transform(Translation(Vector3(0, 0, -.99))));
 
-	log().warning("Bg transform:\n", _bg.transform().matrix());
+	EntityRef test = _entities.createEntity(_entities.root(), "bg");
+	_sprites.addComponent(test);
+	test.sprite()->setSprite(&_menuBgSprite);
 }
 
 
@@ -125,6 +138,8 @@ void MainState::updateFrame() {
 
 	_entities.updateWorldTransform();
 	_sprites.render(_loop.frameInterp(), _camera);
+
+	_menu->render(_game->renderer());
 
 	_game->renderer()->spriteShader()->use();
 	_game->renderer()->spriteShader()->setTextureUnit(0);

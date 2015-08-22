@@ -41,6 +41,8 @@ using namespace lair;
 
 class Game;
 
+class Menu;
+
 
 class MainState : public GameState {
 public:
@@ -73,12 +75,16 @@ protected:
 	bool       _initialized;
 	bool       _running;
 	InterpLoop _loop;
-	int64     _fpsTime;
+	int64      _fpsTime;
 	unsigned   _fpsCount;
 
 	Sprite     _bgSprite;
+	Sprite     _menuBgSprite;
 
 	EntityRef  _bg;
+
+	std::unique_ptr<Menu>
+	           _menu;
 };
 
 

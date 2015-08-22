@@ -18,6 +18,44 @@
 //
 
 
-#include "game.h"
+#ifndef _LOF3_MENU_H
+#define _LOF3_MENU_H
 
 
+#include <lair/core/lair.h>
+#include <lair/core/log.h>
+
+#include "frame.h"
+
+
+using namespace lair;
+
+
+class Menu {
+public:
+	Menu(Sprite* bg, const Vector2& size);
+
+	unsigned selected() const;
+	void setSelected(unsigned index);
+
+	unsigned addEntry(const std::string& label);
+
+	void show(const Vector3& position);
+	void hide();
+
+	void render(Renderer* renderer);
+
+protected:
+	typedef std::vector<std::string> EntryList;
+
+protected:
+	unsigned   _selected;
+	EntryList  _entries;
+
+	bool       _visible;
+	Vector2    _anchor;
+	Frame      _frame;
+};
+
+
+#endif
