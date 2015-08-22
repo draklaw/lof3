@@ -96,7 +96,8 @@ void Game::initialize() {
 	_sys->loader().setNThread(1);
 	_sys->loader().setBasePath(dataPath());
 
-	_window = _sys->createWindow("lof3", 640, 360);
+	_window = _sys->createWindow("lof3", 1280, 720);
+	_sys->setVSyncEnabled(false);
 	log().info("VSync: ", _sys->isVSyncEnabled()? "on": "off");
 
 	_renderModule.reset(new RenderModule(sys(), &_mlogger, DEFAULT_LOG_LEVEL));

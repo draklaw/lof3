@@ -70,6 +70,8 @@ void MainState::run() {
 
 	log().log("Starting main state...");
 	_loop.start();
+	_fpsTime  = _game->sys()->getTimeNs();
+	_fpsCount = 0;
 	while(_running) {
 		switch(_loop.nextEvent()) {
 		case InterpLoop::Tick:
@@ -119,6 +121,8 @@ void MainState::updateTick() {
 void MainState::updateFrame() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+	_game->renderer()->mainBatch().clearBuffers();
+
 	_entities.updateWorldTransform();
 	_sprites.render(_loop.frameInterp(), _camera);
 
@@ -128,6 +132,14 @@ void MainState::updateFrame() {
 	_game->renderer()->mainBatch().render();
 
 	_game->window()->swapBuffers();
+
+	uint64 now = _game->sys()->getTimeNs();
+	++_fpsCount;
+	if(_fpsCount == 60) {
+		log().info("Fps: ", _fpsCount * 1000000000. / (now - _fpsTime));
+		_fpsTime  = now;
+		_fpsCount = 0;
+	}
 
 	LAIR_LOG_OPENGL_ERRORS_TO(log());
 }

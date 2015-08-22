@@ -73,6 +73,8 @@ protected:
 	bool       _initialized;
 	bool       _running;
 	InterpLoop _loop;
+	int64     _fpsTime;
+	unsigned   _fpsCount;
 
 	Sprite     _bgSprite;
 
