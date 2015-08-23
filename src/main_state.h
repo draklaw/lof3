@@ -23,6 +23,7 @@
 
 
 #include <vector>
+#include <deque>
 
 #include <lair/core/lair.h>
 #include <lair/core/log.h>
@@ -67,6 +68,10 @@ public:
 	void updateTick();
 	void updateFrame();
 
+	void showMessage(const std::string& message);
+	void nextMessage();
+	void layoutMessage();
+
 	void openMenu(Menu* menu);
 	void closeMenu();
 
@@ -98,6 +103,13 @@ protected:
 	Sprite      _menuBgSprite;
 
 	EntityRef   _bg;
+
+	std::deque<std::string>
+	            _messages;
+	std::unique_ptr<Frame>
+	            _messageFrame;
+	float       _messageMargin;
+	float       _messageTextHeight;
 
 	std::vector<Menu*>
 	            _menuStack;

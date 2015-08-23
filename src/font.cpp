@@ -60,6 +60,24 @@ unsigned Font::textWidth(const std::string& msg) const {
 }
 
 
+std::string Font::layoutText(std::string msg, unsigned maxWidth) const {
+	unsigned i = 0;
+	unsigned w = 0;
+	while(i < msg.size()) {
+		unsigned ci = 1;
+		unsigned ww = wordWidth(msg, i, &ci);
+		if(w + ww > maxWidth) {
+			msg[i] = '\n';
+			w = 0;
+		} else {
+			w += ww;
+			i = ci;
+		}
+	}
+	return msg;
+}
+
+
 void Font::render(Renderer* renderer, const Vector3& position, const Vector4& color, const std::string& msg,
                   unsigned maxWidth) const {
 	Batch& batch = renderer->mainBatch();
@@ -120,7 +138,7 @@ void Font::render(Renderer* renderer, const Vector3& position, const Vector4& co
 }
 
 
-unsigned Font::wordWidth(const std::string& msg, unsigned i) const {
+unsigned Font::wordWidth(const std::string& msg, unsigned i, unsigned* ci) const {
 	unsigned w = 0;
 	do {
 		auto git = _glyphMap.find(msg[i]);
@@ -129,5 +147,6 @@ unsigned Font::wordWidth(const std::string& msg, unsigned i) const {
 		}
 		++i;
 	} while(i < msg.size() && !std::isspace(msg[i]));
+	if(ci) *ci = i;
 	return w;
 }

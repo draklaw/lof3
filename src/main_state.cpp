@@ -54,6 +54,10 @@ MainState::MainState(Game* game)
 
       _bg(),
 
+      _messages(),
+      _messageFrame(),
+      _messageMargin(0),
+
       _menuStack(),
       _mainMenu(),
       _switchMenu(),
@@ -106,6 +110,11 @@ void MainState::initialize() {
 	Texture* menuTexture = _game->renderer()->getTexture(
 	            "menu.png", Texture::NEAREST | Texture::REPEAT);
 	_menuBgSprite = Sprite(menuTexture, 3, 3);
+
+
+	_messageFrame.reset(new Frame(&_menuBgSprite, Vector2(624, 0)));
+	_messageFrame->position = Vector3(8, 0, .9);
+	_messageMargin = 8;
 
 
 	_mainMenu.reset(new Menu(&_menuBgSprite, _font.get(), &_menuInputs));
@@ -214,11 +223,16 @@ void MainState::init() {
 	_bg = _entities.createEntity(_entities.root(), "bg");
 	_sprites.addComponent(_bg);
 	_bg.sprite()->setSprite(&_bgSprite);
-	_bg.setTransform(Transform(Translation(Vector3(0, _camera.viewBox().max().y() - 480, -.99))));
+	_bg.setTransform(Transform(Translation(
+	               Vector3(0, _camera.viewBox().max().y() - 480, -.99))));
 
 //	EntityRef test = _entities.createEntity(_entities.root(), "test");
 //	_sprites.addComponent(test);
 //	test.sprite()->setSprite(&_menuBgSprite);
+
+	showMessage("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec a diam lectus. Sed sit amet ipsum mauris. Maecenas congue ligula ac quam viverra nec consectetur ante hendrerit. Donec et mollis dolor. Praesent et diam eget libero egestas mattis sit amet vitae augue.");
+	showMessage("Nam tincidunt congue enim, ut porta lorem lacinia consectetur.");
+	showMessage("Donec ut libero sed arcu vehicula ultricies a non tortor. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean ut gravida lorem. Ut turpis felis, pulvinar a semper sed, adipiscing id dolor. Pellentesque auctor nisi id magna consequat sagittis. Curabitur dapibus enim sit amet elit pharetra tincidunt feugiat nisl imperdiet. Ut convallis libero in urna ultrices accumsan. Donec sed odio eros.");
 }
 
 
@@ -229,7 +243,11 @@ void MainState::updateTick() {
 
 void MainState::updateFrame() {
 	_inputs.sync();
-	if(!_menuStack.empty()) {
+	if(!_messages.empty()) {
+		if(_menuInputs.ok->justPressed()) {
+			nextMessage();
+		}
+	} else if(!_menuStack.empty()) {
 		_menuStack.back()->update();
 	}
 
@@ -242,6 +260,14 @@ void MainState::updateFrame() {
 
 	for(Menu* menu: _menuStack) {
 		menu->render(_game->renderer());
+	}
+	if(!_messages.empty()) {
+		_messageFrame->render(_game->renderer());
+
+		_font->render(_game->renderer(),
+		              Vector3(8 + _messageMargin, _messageTextHeight, 0.95),
+		              Vector4(1, 1, 1, 1),
+		              _messages.front());
 	}
 
 	_game->renderer()->spriteShader()->use();
@@ -260,6 +286,32 @@ void MainState::updateFrame() {
 	}
 
 	LAIR_LOG_OPENGL_ERRORS_TO(log());
+}
+
+
+void MainState::showMessage(const std::string& message) {
+	_messages.push_back(_font->layoutText(message, 608));
+	if(_messages.size() == 1) {
+		layoutMessage();
+	}
+}
+
+
+void MainState::nextMessage() {
+	lairAssert(!_messages.empty());
+	_messages.pop_front();
+	if(!_messages.empty()) {
+		layoutMessage();
+	}
+}
+
+
+void MainState::layoutMessage() {
+	unsigned nLines = std::count(_messages.front().begin(), _messages.front().end(), '\n') + 1;
+	log().warning("NLines: ", nLines);
+	_messageFrame->size.y() = _messageMargin * 2 + nLines * _font->height();
+	_messageFrame->position.y() = _camera.viewBox().max().y() - 8 - _messageFrame->size.y();
+	_messageTextHeight = _camera.viewBox().max().y() - 8 - _messageMargin - _font->baselineToTop;
 }
 
 

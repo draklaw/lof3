@@ -45,6 +45,7 @@ public:
 	unsigned height()   const { return _height; }
 
 	unsigned textWidth(const std::string& msg) const;
+	std::string layoutText(std::string msg, unsigned maxWidth) const;
 
 	void render(Renderer* renderer, const Vector3& position, const Vector4& color,
 	            const std::string& msg, unsigned maxWidth = 999999) const;
@@ -64,7 +65,7 @@ protected:
 	                           Eigen::aligned_allocator<std::pair<unsigned, Glyph>>> GlyphMap;
 
 protected:
-	unsigned wordWidth(const std::string& msg, unsigned i) const;
+	unsigned wordWidth(const std::string& msg, unsigned i, unsigned* ci = nullptr) const;
 
 protected:
 	unsigned _fontSize;
