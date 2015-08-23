@@ -40,6 +40,8 @@
 
 #include "menu.h"
 #include "text_component.h"
+#include "rules.h"
+#include "fight.h"
 
 #include "game_state.h"
 
@@ -83,10 +85,23 @@ public:
 	void nextMessage();
 	void layoutMessage();
 
-	void openMenu(Menu* menu);
+	void openMenu(Menu* menu, Menu* parent = nullptr, unsigned entry = 0);
+	Menu::Callback openMenuFunc(Menu* menu, Menu* parent = nullptr,
+	                            unsigned entry = 0);
 	void closeMenu();
+	Menu::Callback closeMenuFunc();
+
+	void doAction();
+	Menu::Callback doActionFunc();
 
 	Logger& log();
+
+protected:
+	enum FightState {
+		PLAYING,
+		BOSS_TURN,
+		GAME_OVER
+	};
 
 protected:
 	Game* _game;
@@ -105,6 +120,11 @@ protected:
 	InterpLoop  _loop;
 	int64       _fpsTime;
 	unsigned    _fpsCount;
+
+	Rules       _rules;
+	Player      _player;
+	Fight       _fight;
+	FightState  _state;
 
 	MenuInputs  _menuInputs;
 
@@ -152,6 +172,8 @@ protected:
 	            _spellMenu;
 	std::unique_ptr<Menu>
 	            _summonMenu;
+	std::unique_ptr<Menu>
+	            _pcMenu;
 };
 
 

@@ -30,7 +30,7 @@ Fight::Fight(Logger& logger, Rules& r, Player& p)
 	boss{rules.boss_hp[0], NONE, {0}, {0}, rules.boss_init},
 	tier(0)
 {
-	log().setLevel(LogLevel::Warning);
+	//log().setLevel(LogLevel::Warning);
 	log().info("Knife fight : BEGIN !");
 
 	boss_target = rules.party_size;
