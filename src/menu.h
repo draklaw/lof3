@@ -25,36 +25,87 @@
 #include <lair/core/lair.h>
 #include <lair/core/log.h>
 
+#include <lair/utils/input.h>
+
 #include "frame.h"
+#include "font.h"
 
 
 using namespace lair;
 
 
+struct MenuInputs {
+	Input*      down;
+	Input*      up;
+//	Input*      left;
+//	Input*      right;
+	Input*      ok;
+	Input*      cancel;
+};
+
+
 class Menu {
 public:
-	Menu(Sprite* bg, const Vector2& size);
+	typedef std::function<void()> Callback;
+	enum {
+		HIDDEN,
+		DISABLED,
+		ENABLED
+	};
+
+public:
+	Menu(Sprite* bg, Font* font, MenuInputs* inputs,
+	     const Callback& cancelCallback = Callback(),
+	     const Vector2& size = Vector2::Zero());
 
 	unsigned selected() const;
 	void setSelected(unsigned index);
 
-	unsigned addEntry(const std::string& label);
+	uint8 entryStatus(unsigned i) const;
+	void hideEntry(unsigned i);
+	void disableEntry(unsigned i);
+	void enableEntry(unsigned i);
+
+	unsigned addEntry(const std::string& label, uint8 status = ENABLED,
+	                  const Callback& callback = Callback());
 
 	void show(const Vector3& position);
 	void hide();
 
+	void update();
+	void selectNext();
+	void selectPrev();
+	void validate();
+	void cancel();
+
+	void layout();
 	void render(Renderer* renderer);
 
-protected:
-	typedef std::vector<std::string> EntryList;
+	Vector2    anchor;
+	Vector2    margin;
+	float      indent;
+	Vector4    textColor;
+	Vector4    disabledColor;
 
 protected:
-	unsigned   _selected;
-	EntryList  _entries;
+	struct Entry {
+		std::string label;
+		uint8       status;
+		Callback    callback;
+	};
 
-	bool       _visible;
-	Vector2    _anchor;
-	Frame      _frame;
+	typedef std::vector<Entry> EntryList;
+
+protected:
+	MenuInputs* _inputs;
+	Callback    _cancelCallback;
+	unsigned    _selected;
+	unsigned    _nSelectable;
+	EntryList   _entries;
+
+	bool        _visible;
+	Frame       _frame;
+	Font*       _font;
 };
 
 

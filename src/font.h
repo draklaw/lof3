@@ -44,11 +44,12 @@ public:
 	unsigned fontSize() const { return _fontSize; }
 	unsigned height()   const { return _height; }
 
-	void render(Renderer* renderer, const Vector3& position,
+	unsigned textWidth(const std::string& msg) const;
+
+	void render(Renderer* renderer, const Vector3& position, const Vector4& color,
 	            const std::string& msg, unsigned maxWidth = 999999) const;
 
 	Texture*    texture;
-	Vector4     color;
 
 protected:
 	struct Glyph {

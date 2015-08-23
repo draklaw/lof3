@@ -29,6 +29,7 @@ MainState::MainState(Game* game)
 	: _game(game),
       _entities(_game->log()),
       _sprites(_game->renderer()),
+      _inputs(_game->sys(), &_game->log()),
       _camera(),
       _running(false),
       _loop(_game->sys()) {
@@ -49,7 +50,24 @@ void MainState::initialize() {
 	layoutScreen();
 
 
-	_fontJson = _game->sys()->loader().getJson("8-bit_operator+_bold_23.json");
+	_menuInputs.up     = _inputs.addInput("up");
+	_menuInputs.down   = _inputs.addInput("down");
+//	_menuInputs.left   = _inputs.addInput("left");
+//	_menuInputs.right  = _inputs.addInput("right");
+	_menuInputs.ok     = _inputs.addInput("ok");
+	_menuInputs.cancel = _inputs.addInput("cancel");
+
+	_inputs.mapScanCode(_menuInputs.up,     SDL_SCANCODE_UP);
+	_inputs.mapScanCode(_menuInputs.down,   SDL_SCANCODE_DOWN);
+//	_inputs.mapScanCode(_menuInputs.left,   SDL_SCANCODE_LEFT);
+//	_inputs.mapScanCode(_menuInputs.right,  SDL_SCANCODE_RIGHT);
+	_inputs.mapScanCode(_menuInputs.ok,     SDL_SCANCODE_LEFT);
+	_inputs.mapScanCode(_menuInputs.cancel, SDL_SCANCODE_RIGHT);
+	_inputs.mapScanCode(_menuInputs.ok,     SDL_SCANCODE_RETURN);
+	_inputs.mapScanCode(_menuInputs.cancel, SDL_SCANCODE_ESCAPE);
+
+
+	_fontJson = _game->sys()->loader().getJson("8-bit_operator+_regular_23.json");
 	_fontTex  = _game->renderer()->getTexture(_fontJson["file"].asString(),
 	        Texture::NEAREST | Texture::REPEAT);
 	_font.reset(new Font(_fontJson, _fontTex));
@@ -63,7 +81,14 @@ void MainState::initialize() {
 	_menuBgSprite = Sprite(menuTexture, 3, 3);
 
 
-	_menu.reset(new Menu(&_menuBgSprite, Vector2(128, 128)));
+	_menu.reset(new Menu(&_menuBgSprite, _font.get(), &_menuInputs));
+	_menu->addEntry("Attack");
+	_menu->addEntry("Magic", Menu::DISABLED);
+	_menu->addEntry("Analyse");
+	_menu->addEntry("Test 1");
+	_menu->addEntry("Test 2", Menu::HIDDEN);
+	_menu->addEntry("Test 3");
+	_menu->layout();
 	_menu->show(Vector3(64, 64, 0));
 
 	_initialized = true;
@@ -138,6 +163,9 @@ void MainState::updateTick() {
 
 
 void MainState::updateFrame() {
+	_inputs.sync();
+	_menu->update();
+
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	_game->renderer()->mainBatch().clearBuffers();
@@ -147,10 +175,9 @@ void MainState::updateFrame() {
 
 	_menu->render(_game->renderer());
 
-	_font->color = Vector4(1, .5, 0, 1);
-	_font->render(_game->renderer(), Vector3(64, 64 + 128 - _font->height(), .99),
-	              "Test\naoeu_ht nspq. !?\nThe quick brown fox jumps over the lazy dog",
-	              128);
+//	_font->render(_game->renderer(), Vector3(64, 64 + 128 - _font->height(), .99),
+//	              "Test\naoeu_ht nspq. !?\nThe quick brown fox jumps over the lazy dog",
+//	              128);
 
 	_game->renderer()->spriteShader()->use();
 	_game->renderer()->spriteShader()->setTextureUnit(0);

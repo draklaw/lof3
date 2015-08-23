@@ -47,6 +47,10 @@ Game::Game()
 
       _mainState(nullptr) {
 	_mlogger.addBackend(&_logBackend);
+	dbgLogger.setMaster(&_mlogger);
+	dbgLogger.setDefaultModuleName("DEBUG");
+	dbgLogger.setLevel(LogLevel::Debug);
+
 	log().log("Starting game...");
 
 #ifdef DATA_DIR

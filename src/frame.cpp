@@ -41,8 +41,8 @@ void Frame::render(Renderer* renderer) {
 	unsigned tw = background->width();
 	unsigned th = background->height();
 
-	unsigned nHTiles = size.x() / tw;
-	unsigned nVTiles = size.y() / th;
+	unsigned nHTiles = (size.x()-1) / tw + 1;
+	unsigned nVTiles = (size.y()-1) / th + 1;
 
 	Vector4 offset;
 	offset << position, 0;

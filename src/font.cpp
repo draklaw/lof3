@@ -25,7 +25,6 @@
 
 Font::Font(const Json::Value font, Texture* tex)
     : texture(tex),
-      color(1, 1, 1, 1),
       _height(),
       _glyphMap() {
 	_fontSize = font["size"].asInt();
@@ -46,7 +45,20 @@ Font::Font(const Json::Value font, Texture* tex)
 	}
 }
 
-void Font::render(Renderer* renderer, const Vector3& position, const std::string& msg,
+
+unsigned Font::textWidth(const std::string& msg) const {
+	unsigned w = 0;
+	for(char c: msg) {
+		auto git = _glyphMap.find(c);
+		if(git != _glyphMap.end()) {
+			w += git->second.advance;
+		}
+	}
+	return w;
+}
+
+
+void Font::render(Renderer* renderer, const Vector3& position, const Vector4& color, const std::string& msg,
                   unsigned maxWidth) const {
 	Batch& batch = renderer->mainBatch();
 	VertexBuffer& buff = batch.getBuffer(

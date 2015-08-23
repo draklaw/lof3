@@ -23,12 +23,21 @@
 #include "menu.h"
 
 
-Menu::Menu(Sprite* bg, const Vector2& size)
-    : _selected(0),
+Menu::Menu(Sprite* bg, Font* font, MenuInputs* inputs,
+           const Callback& cancelCallback, const Vector2& size)
+    : anchor(0, 0),
+      margin(8, 8),
+      indent(16),
+      textColor(1, 1, 1, 1),
+      disabledColor(.5, .5, .5, 1),
+      _inputs(inputs),
+      _cancelCallback(cancelCallback),
+      _selected(0),
+      _nSelectable(0),
       _entries(),
       _visible(false),
-      _anchor(0, 0),
-      _frame(bg, size) {
+      _frame(bg, size),
+      _font(font) {
 	lairAssert(bg);
 }
 
@@ -44,8 +53,58 @@ void Menu::setSelected(unsigned index) {
 }
 
 
-unsigned Menu::addEntry(const std::string& label) {
-	_entries.emplace_back(label);
+uint8 Menu::entryStatus(unsigned i) const {
+	lairAssert(i < _entries.size());
+	return _entries[i].status;
+}
+
+
+void Menu::hideEntry(unsigned i) {
+	lairAssert(i < _entries.size());
+	if(_entries[i].status == ENABLED) {
+		--_nSelectable;
+		if(_selected == i) {
+			selectNext();
+		}
+	}
+	_entries[i].status = HIDDEN;
+}
+
+
+void Menu::disableEntry(unsigned i) {
+	lairAssert(i < _entries.size());
+	if(_entries[i].status == ENABLED) {
+		--_nSelectable;
+		if(_selected == i) {
+			selectNext();
+		}
+	}
+	_entries[i].status = DISABLED;
+}
+
+
+void Menu::enableEntry(unsigned i) {
+	lairAssert(i < _entries.size());
+	if(_entries[i].status != ENABLED) {
+		++_nSelectable;
+		if(_nSelectable == 1) {
+			_selected = i;
+		}
+	}
+	_entries[i].status = ENABLED;
+}
+
+
+unsigned Menu::addEntry(const std::string& label, uint8 status,
+                            const Callback& callback) {
+	_entries.emplace_back(Entry{
+	    label,
+	    status,
+	    callback
+	});
+	if(status == ENABLED) {
+		++_nSelectable;
+	}
 	return _entries.size() - 1;
 }
 
@@ -61,10 +120,92 @@ void Menu::hide() {
 }
 
 
+void Menu::layout() {
+	unsigned textWidth = 0;
+	for(const Entry& e: _entries) {
+		textWidth = std::max(textWidth, _font->textWidth(e.label));
+	}
+	_frame.size = Vector2(
+	            margin.x() * 2 + indent + textWidth,
+	            margin.y() * 2 + _font->height() * _entries.size());
+}
+
+
+void Menu::update() {
+	if(_inputs->down->justPressed()) {
+		selectNext();
+	} else if(_inputs->up->justPressed()) {
+		selectPrev();
+	} else if(_inputs->ok->justPressed()) {
+		validate();
+	} else if(_inputs->cancel->justPressed()) {
+		cancel();
+	}
+}
+
+
+void Menu::selectNext() {
+	if(_nSelectable != 0) {
+		for(unsigned i = 1; i < _entries.size(); ++i) {
+			unsigned index = (i + _selected) % _entries.size();
+			if(entryStatus(index) == ENABLED) {
+				_selected = index;
+				return;
+			}
+		}
+	}
+}
+
+
+void Menu::selectPrev() {
+	if(_nSelectable != 0) {
+		for(unsigned i = 1; i < _entries.size(); ++i) {
+			unsigned index = (_entries.size() - i + _selected) % _entries.size();
+			if(entryStatus(index) == ENABLED) {
+				_selected = index;
+				return;
+			}
+		}
+	}
+}
+
+
+void Menu::validate() {
+	if(_nSelectable != 0 && entryStatus(_selected) == ENABLED
+	        && _entries[_selected].callback) {
+		_entries[_selected].callback();
+	}
+}
+
+
+void Menu::cancel() {
+	if(_cancelCallback) {
+		_cancelCallback();
+	}
+}
+
+
 void Menu::render(Renderer* renderer) {
 	if(!_visible) {
 		return;
 	}
 
 	_frame.render(renderer);
+
+	Vector3 pos = _frame.position;
+	pos[0] += margin.x();
+	pos[1] += _frame.size.y() - _font->height() - margin.y();
+	pos[2] += 0.001;
+	Vector3 offset(indent, 0, 0);
+	for(unsigned i = 0; i < _entries.size(); ++i) {
+		if(_entries[i].status != HIDDEN) {
+			Vector4 color = (_entries[i].status == ENABLED)?
+			            textColor: disabledColor;
+			if(i == _selected && entryStatus(i) == ENABLED) {
+				_font->render(renderer, pos, color, ">");
+			}
+			_font->render(renderer, pos + offset, color, _entries[i].label);
+			pos.y() -= _font->height();
+		}
+	}
 }

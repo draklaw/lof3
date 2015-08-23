@@ -26,12 +26,15 @@
 #include <lair/core/log.h>
 
 #include <lair/utils/interp_loop.h>
+#include <lair/utils/input.h>
 
 #include <lair/render_gl2/orthographic_camera.h>
 
 #include <lair/ec/entity.h>
 #include <lair/ec/entity_manager.h>
 #include <lair/ec/sprite_component.h>
+
+#include "menu.h"
 
 #include "game_state.h"
 
@@ -42,7 +45,6 @@ using namespace lair;
 class Game;
 
 class Font;
-class Menu;
 
 
 class MainState : public GameState {
@@ -70,6 +72,7 @@ protected:
 
 	EntityManager          _entities;
 	SpriteComponentManager _sprites;
+	InputManager           _inputs;
 
 	OrthographicCamera _camera;
 
@@ -78,6 +81,8 @@ protected:
 	InterpLoop  _loop;
 	int64       _fpsTime;
 	unsigned    _fpsCount;
+
+	MenuInputs  _menuInputs;
 
 	Texture*    _fontTex;
 	Json::Value _fontJson;
