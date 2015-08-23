@@ -90,6 +90,8 @@ public:
 	Vector4    textColor;
 	Vector4    disabledColor;
 
+	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
 protected:
 	struct Entry {
 		std::string label;

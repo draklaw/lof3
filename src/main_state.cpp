@@ -196,6 +196,12 @@ void MainState::shutdown() {
 void MainState::run() {
 	lairAssert(_initialized);
 
+	//TODO: Provide ruleset.
+	Rules rules(_game->log(), "");
+	Player p = {{0}, {0}, {0}, 0, {0}, {0}};
+	Fight fight(_game->log(), rules, p);
+	unsigned target = 0;
+
 	_running = true;
 
 	init();
@@ -207,6 +213,14 @@ void MainState::run() {
 	while(_running) {
 		switch(_loop.nextEvent()) {
 		case InterpLoop::Tick:
+			if (!fight.game_over() && fight.tick_fight())
+			{
+				while(fight.party[target].hp == 0)
+					target = (target+1)%rules.party_size;
+				
+				//log().log("Punching good guy ", target, ".");
+				fight.curse(PUNCH, target);
+			}
 			updateTick();
 			break;
 		case InterpLoop::Frame:

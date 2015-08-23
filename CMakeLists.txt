@@ -51,6 +51,7 @@ add_executable(lof3
 
 	src/text_component.cpp
 
+	src/rules.cpp
 	src/fight.cpp
 
 	src/game.cpp

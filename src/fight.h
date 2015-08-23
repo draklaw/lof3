@@ -25,68 +25,57 @@
 #include <lair/core/lair.h>
 #include <lair/core/log.h>
 
+#include "rules.h"
 
+
+using namespace std;
 using namespace lair;
 
-
-#define PARTY_SIZE 4
-
-enum Class { FIGHTER, HEALER, WIZARD, NINJA };
-enum Element { NONE, FIRE, ICE, SPARK, ACID, NB_ELEMS };
-enum Status { NORMAL, SHIELD, SLOW, DISABLE, SILENCE, NB_STATUS };
-enum Spell { SMITE, HEAL, NURSE, REZ, NUKES,
-	AOES = NUKES+NB_ELEMS, SHIELDS = AOES+NB_ELEMS, NB_SPELLS = SHIELDS+NB_ELEMS
-};
-enum QTE { EASY, MEDIUM, HARD, NB_QTES };
-enum Curse { PUNCH, SWITCH, SCAN, STORM, STRIKE, VORPAL, CRIPPLE, DRAIN, MUD,
-	DISPEL, SPRITES, MAGELING, TOMBERRY, PROMPT, NB_CURSES = PROMPT+NB_QTES
-};
-
-struct PC {
-	Class job;                     // Character class^H^H^H^H^Hjob
-	unsigned xp;                   // Level
-	unsigned hp;                   // Health
-	unsigned mp;                   // Mana
-	unsigned resists[NB_ELEMS];    // Current elemental resistances
-	bool status[NB_STATUS];        // Active (de)buffs
-	unsigned cooldowns[NB_SPELLS]; // Spell cooldowns
-	unsigned init;                 // Time to initiative
-};
-
-struct Boss {
-	unsigned hp;                   // Health bar
-	unsigned cooldowns[NB_CURSES]; // Curses cooldowns
-	unsigned init;                 // Time to initiative
-};
+// 0 ... boss_target : target PC
+//    boss_target    : target boss
+// boss_target ... + : target minion
+typedef unsigned Target;
 
 class Fight {
 public:
-	// Party and boss stats
-	PC party[PARTY_SIZE];
-	Boss boss;
+	// Visible internal data
+	Rules& rules;
 
-	// Engage a fresh fight using NULL knowledge.
-	Fight(Logger& logger, void* knowledge);
+	Player& player;
+	vector<PC> party;
+	Boss boss;
+	unsigned tier;
+	vector<Minion> horde;
+
+	Target boss_target;
+
+	// Engage a fresh fight with player p.
+	Fight(Logger& logger, Rules& r, Player& p);
 	~Fight();
 
 	// Returns true iff the boss has to play now.
 	bool tick_fight();
-
-	// Can the bad guy do X ? If so, do it on target (if a valid one is provided).
-	bool can_haz (Curse curse, unsigned target);
-
 	// Returns true if the fight is over (either side has been wiped out).
-	bool game_over ();
+	bool game_over();
+
+	// Can curse c be used on target t ?
+	bool can_haz (Curse c, Target t);
+	// As the boss, use curse c on target t.
+	void curse (Curse c, Target t);
+	// As user, use ability s on target t.
+	void play (Target user, Spell s, Target t);
+	// As one of the PCs, use item i on target t.
+	void use (Item i, Target t);
 
 private:
 	Logger _logger;
 	Logger& log();
 
 	// Play as one of the PCs.
-	void play_party (unsigned character);
+	void play_party (Target character);
 
-	// Substract amount from hitpoints total, return true iff death ensues.
-	bool damage (unsigned& hitpoints, unsigned amount);
+	// Inflict amount damage with element e to target t.
+	void damage (Target t, unsigned amount, Element e);
 };
 
 
