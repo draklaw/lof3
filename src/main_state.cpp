@@ -49,8 +49,9 @@ void MainState::initialize() {
 	layoutScreen();
 
 
-	_fontJson = _game->sys()->loader().getJson("8-bit_operator+_regular_23.json");
-	_fontTex  = _game->renderer()->getTexture(_fontJson["file"].asString());
+	_fontJson = _game->sys()->loader().getJson("8-bit_operator+_bold_23.json");
+	_fontTex  = _game->renderer()->getTexture(_fontJson["file"].asString(),
+	        Texture::NEAREST | Texture::REPEAT);
 	_font.reset(new Font(_fontJson, _fontTex));
 
 	Texture* bgTexture = _game->renderer()->getTexture(
@@ -62,8 +63,8 @@ void MainState::initialize() {
 	_menuBgSprite = Sprite(menuTexture, 3, 3);
 
 
-	_menu.reset(new Menu(&_menuBgSprite, Vector2(256, 256)));
-	_menu->show(Vector3(64, -64, 0));
+	_menu.reset(new Menu(&_menuBgSprite, Vector2(128, 128)));
+	_menu->show(Vector3(64, 64, 0));
 
 	_initialized = true;
 }
@@ -111,8 +112,8 @@ void MainState::layoutScreen() {
 	int w = _game->window()->width();
 	int h = _game->window()->height();
 	_camera.setViewBox(Box3(
-		Vector3(  0, -640 * h / w, -1),
-		Vector3(640,            0,  1)
+		Vector3(  0,           0, -1),
+		Vector3(640, 640 * h / w,  1)
 	));
 }
 
@@ -123,9 +124,9 @@ void MainState::init() {
 	_bg = _entities.createEntity(_entities.root(), "bg");
 	_sprites.addComponent(_bg);
 	_bg.sprite()->setSprite(&_bgSprite);
-	_bg.setTransform(Transform(Translation(Vector3(0, 0, -.99))));
+	_bg.setTransform(Transform(Translation(Vector3(0, _camera.viewBox().max().y() - 480, -.99))));
 
-	EntityRef test = _entities.createEntity(_entities.root(), "bg");
+	EntityRef test = _entities.createEntity(_entities.root(), "test");
 	_sprites.addComponent(test);
 	test.sprite()->setSprite(&_menuBgSprite);
 }
@@ -146,7 +147,10 @@ void MainState::updateFrame() {
 
 	_menu->render(_game->renderer());
 
-	_font->render(_game->renderer(), Vector3(64, -64, .99), "Test aoeuhtns. !?");
+	_font->color = Vector4(1, .5, 0, 1);
+	_font->render(_game->renderer(), Vector3(64, 64 + 128 - _font->height(), .99),
+	              "Test\naoeu_ht nspq. !?\nThe quick brown fox jumps over the lazy dog",
+	              128);
 
 	_game->renderer()->spriteShader()->use();
 	_game->renderer()->spriteShader()->setTextureUnit(0);

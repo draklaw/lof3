@@ -25,8 +25,10 @@
 
 Font::Font(const Json::Value font, Texture* tex)
     : texture(tex),
+      color(1, 1, 1, 1),
       _height(),
       _glyphMap() {
+	_fontSize = font["size"].asInt();
 	_height = font["height"].asInt();
 
 	Vector2 texSize(texture->width(), texture->height());
@@ -54,7 +56,14 @@ void Font::render(Renderer* renderer, const Vector3& position, const std::string
 
 	Vector4 cursor;
 	cursor << position, 0;
-	for(char c: msg) {
+	for(unsigned i = 0; i < msg.size(); ++i) {
+		char c = msg[i];
+		if(c == '\n' ||
+		        (std::isspace(c) && cursor.x() - position.x() + wordWidth(msg, i) > maxWidth)) {
+			cursor.x() = position.x();
+			cursor.y() -= _height;
+			continue;
+		}
 		auto git = _glyphMap.find(c);
 		if(git == _glyphMap.end()) {
 			continue;
@@ -62,14 +71,20 @@ void Font::render(Renderer* renderer, const Vector3& position, const std::string
 
 		const Box2& region = git->second.region;
 		const Vector2& size = git->second.size;
-		Vector4 offset = cursor;
-		offset.head<2>() -= git->second.offset;
 
-		Vector4 v0(       0,         0, 0, 1);
-		Vector4 v1(       0, -size.y(), 0, 1);
-		Vector4 v2(size.x(),         0, 0, 1);
-		Vector4 v3(size.x(), -size.y(), 0, 1);
-		Vector4 color(1, 1, 1, 1);
+		if(cursor.x() - position.x() + git->second.advance > maxWidth) {
+			cursor.x() = position.x();
+			cursor.y() -= _height;
+		}
+
+		Vector4 offset = cursor;
+		offset[0] += git->second.offset[0];
+		offset[1] += _height - size.y() - git->second.offset[1];
+
+		Vector4 v0(       0, size.y(), 0, 1);
+		Vector4 v1(       0,        0, 0, 1);
+		Vector4 v2(size.x(), size.y(), 0, 1);
+		Vector4 v3(size.x(),        0, 0, 1);
 		buff.addVertex(SpriteVertex{
 				v0 + offset, color, region.corner(Box2::BottomLeft) });
 		buff.addVertex(SpriteVertex{
@@ -88,4 +103,17 @@ void Font::render(Renderer* renderer, const Vector3& position, const std::string
 
 		cursor[0] += git->second.advance;
 	}
+}
+
+
+unsigned Font::wordWidth(const std::string& msg, unsigned i) const {
+	unsigned w = 0;
+	do {
+		auto git = _glyphMap.find(msg[i]);
+		if(git != _glyphMap.end()) {
+			w += git->second.advance;
+		}
+		++i;
+	} while(i < msg.size() && !std::isspace(msg[i]));
+	return w;
 }

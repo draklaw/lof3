@@ -46,6 +46,7 @@ void Frame::render(Renderer* renderer) {
 
 	Vector4 offset;
 	offset << position, 0;
+	offset.y() += size.y();
 
 	for(unsigned y = 0; y < nVTiles ; ++y) {
 		for(unsigned x = 0; x < nHTiles; ++x) {

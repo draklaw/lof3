@@ -41,10 +41,14 @@ class Font {
 public:
 	Font(const Json::Value font, Texture* tex);
 
+	unsigned fontSize() const { return _fontSize; }
+	unsigned height()   const { return _height; }
+
 	void render(Renderer* renderer, const Vector3& position,
-	            const std::string& msg, unsigned maxWidth = 0) const;
+	            const std::string& msg, unsigned maxWidth = 999999) const;
 
 	Texture*    texture;
+	Vector4     color;
 
 protected:
 	struct Glyph {
@@ -58,6 +62,10 @@ protected:
 	                           Eigen::aligned_allocator<std::pair<unsigned, Glyph>>> GlyphMap;
 
 protected:
+	unsigned wordWidth(const std::string& msg, unsigned i) const;
+
+protected:
+	unsigned _fontSize;
 	unsigned _height;
 	GlyphMap _glyphMap;
 };
