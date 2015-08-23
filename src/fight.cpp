@@ -23,21 +23,51 @@
 // Hard-coded data
 unsigned ClassDPS[] = { 4, 1, 2, 5 };
 
-Fight::Fight(Logger& logger, void* knowledge)
-: _logger(&logger),
-  party({
-		{HEALER,50,40,6,{},{},{},4},
-		{FIGHTER,100,0,5,{},{},{},3},
-		{WIZARD,30,60,4,{},{},{},2},
-		{NINJA,80,30,5,{},{},{},1},
-	})
+Fight::Fight(Logger& logger, Player& p)
+:	_logger(&logger),
+	player(p),
+	rules(logger, this, ""), //TODO: Provide ruleset.
+	boss{rules.boss_hp[0], NONE, {0}, {0}, rules.boss_init},
+	tier(0)
 {
-	assert (knowledge == nullptr);
-
 	log().log("Knife fight : BEGIN !");
 
-	// Our antihero.
-	boss = {3000,{0},5};
+	party.push_back({
+		FIGHTER, 12,
+		rules.hd[FIGHTER] * 12,
+		rules.mp[FIGHTER] * 12,
+		NULL,
+		{0}, {0}, {0},
+		0,
+		rules.init[FIGHTER]
+	});
+	party.push_back({
+		HEALER, 11,
+		rules.hd[HEALER] * 11,
+		rules.mp[HEALER] * 11,
+		NULL,
+		{0}, {0}, {0},
+		0,
+		rules.init[HEALER]
+	});
+	party.push_back({
+		WIZARD, 10,
+		rules.hd[WIZARD] * 10,
+		rules.mp[WIZARD] * 10,
+		NULL,
+		{0}, {0}, {0},
+		0,
+		rules.init[WIZARD]
+	});
+	party.push_back({
+		NINJA, 11,
+		rules.hd[NINJA] * 12,
+		rules.mp[NINJA] * 12,
+		NULL,
+		{0}, {0}, {0},
+		0,
+		rules.init[NINJA]
+	});
 }
 
 Fight::~Fight()
@@ -46,14 +76,17 @@ Fight::~Fight()
 
 bool Fight::tick_fight ()
 {
-	log().log("Clock's ticking !");
+	log().log("Clock's ticking ! Status : ", boss.hp, " vs. ", party[0].hp, "/", party[1].hp, "/", party[2].hp, "/", party[3].hp);
 
-	if (boss.init-- == 0)
-		return true;
-
-	for (unsigned i = 0 ; i < PARTY_SIZE ; i++)
+	for (unsigned i = 0 ; i < party.size() ; i++)
 		if (party[i].init-- == 0)
 			play_party(i);
+
+	if (boss.init-- == 0)
+	{
+		boss.init = rules.boss_init;
+		return true;
+	}
 
 	return false;
 }
@@ -67,8 +100,8 @@ bool Fight::game_over ()
 	}
 
 	bool survivors = false;
-	for (unsigned i = 0 ; i < PARTY_SIZE ; i++)
-		if (party[i].hp != 0)
+	for (PC& pc : party)
+		if (pc.hp != 0)
 			survivors = true;
 
 	if (!survivors)
@@ -76,58 +109,16 @@ bool Fight::game_over ()
 	return !survivors;
 }
 
-bool Fight::can_haz (Curse curse, unsigned target)
-{
-	log().log("Checking my mighty ", curse, ".");
-	if (curse != PUNCH)
-		return false;
-	
-	if (target < PARTY_SIZE)
-	{
-		log().log("Punching the face of ", target, ".");
-		damage (party[target].hp, 20);
-		boss.init = 5;
-	}
-	return true;
-}
-
 Logger& Fight::log()
 {
 	return _logger;
 }
 
-void Fight::play_party (unsigned character)
+void Fight::play_party (Target character)
 {
-	unsigned c = character;
+	Target c = character;
 
 	// Attak the boss.
 	log().log("Player ", c, " says : \"I smite thee, evil one !\"");
-	damage (boss.hp, 42);
-
-	// Reset initiative.
-	switch (party[c].job)
-	{
-		case NINJA:
-			party[c].init = 3;
-			break;
-		case FIGHTER:
-			party[c].init = 4;
-			break;
-		case HEALER:
-		case WIZARD:
-		default:
-			party[c].init = 5;
-	}
-}
-
-bool Fight::damage (unsigned& hitpoints, unsigned amount)
-{
-	if (amount < hitpoints)
-		hitpoints -= amount;
-	else
-		hitpoints = 0;
-
-	log().log("HP : ", hitpoints, "(-", amount, ")");
-
-	return hitpoints == 0;	
+	rules.play(c, AA, rules.boss_target);
 }

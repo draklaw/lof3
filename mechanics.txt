@@ -40,4 +40,3 @@
 -> The player will score some amount of success againt it, depending on his skill.
 -> Failing during a QTE will inflict massive damage on the PC party.
 -> If the player does not fail at all, he scores a Perfect, damaging the boss instead.
-
