@@ -112,6 +112,14 @@ void MainState::initialize() {
 	            "bg.png", Texture::NEAREST | Texture::CLAMP);
 	_bgSprite = Sprite(bgTexture);
 
+	Texture* healthEmptyTexture = _game->renderer()->getTexture(
+	            "health_bar_empty.png", Texture::NEAREST | Texture::CLAMP);
+	_healthEmptySprite = Sprite(healthEmptyTexture);
+
+	Texture* healthFullTexture = _game->renderer()->getTexture(
+	            "health_bar_full.png", Texture::NEAREST | Texture::CLAMP);
+	_healthFullSprite = Sprite(healthFullTexture);
+
 	Texture* menuTexture = _game->renderer()->getTexture(
 	            "menu.png", Texture::NEAREST | Texture::REPEAT);
 	_menuBgSprite = Sprite(menuTexture, 3, 3);
@@ -250,6 +258,21 @@ void MainState::init() {
 	_bg.sprite()->setSprite(&_bgSprite);
 	_bg.setTransform(Transform(Translation(
 	               Vector3(0, _camera.viewBox().max().y() - 480, -.99))));
+
+
+	_warriorHealthEmpty = _entities.createEntity(_entities.root(), "warriorHealthEmpty");
+	_sprites.addComponent(_warriorHealthEmpty);
+	_warriorHealthEmpty.sprite()->setSprite(&_healthEmptySprite);
+	_warriorHealthEmpty.setTransform(Transform(Translation(
+	               Vector3(20, _camera.viewBox().max().y() - 20, -.10))));
+
+	_warriorHealthFull = _entities.createEntity(_entities.root(), "warriorHealthFull");
+	_sprites.addComponent(_warriorHealthFull);
+	_warriorHealthFull.sprite()->setSprite(&_healthFullSprite);
+	_warriorHealthFull.setTransform(Transform(Translation(
+	               Vector3(20, _camera.viewBox().max().y() - 20, -.05))));
+	_warriorHealthFull.sprite()->setView(Box2(Vector2(0, 0), Vector2(.66, 1)));
+
 
 	Vector3 closestPos(_camera.viewBox().max().x() - 30,
 	                   _camera.viewBox().max().y() - 260, -.8);

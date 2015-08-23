@@ -103,6 +103,8 @@ protected:
 	            _font;
 
 	Sprite      _bgSprite;
+	Sprite      _healthEmptySprite;
+	Sprite      _healthFullSprite;
 	Sprite      _menuBgSprite;
 	Sprite      _warriorSprite;
 	Sprite      _blackMageSprite;
@@ -110,6 +112,9 @@ protected:
 	Sprite      _ninjaSprite;
 
 	EntityRef   _bg;
+
+	EntityRef   _warriorHealthEmpty;
+	EntityRef   _warriorHealthFull;
 	EntityRef   _warrior;
 	EntityRef   _blackMage;
 	EntityRef   _whiteMage;
