@@ -25,10 +25,12 @@
 
 Font::Font(const Json::Value font, Texture* tex)
     : texture(tex),
+      baselineToTop(0),
       _height(),
       _glyphMap() {
 	_fontSize = font["size"].asInt();
 	_height = font["height"].asInt();
+	baselineToTop = _height / 2;
 
 	Vector2 texSize(texture->width(), texture->height());
 	for(const Json::Value& c: font["chars"]) {

@@ -57,10 +57,10 @@ void Frame::render(Renderer* renderer) {
 			else if(y > 0)     { ti += 3; }
 
 			Box2 region = background->tileBox(ti);
-			Vector4 v0(float(x + 0) * tw, -float(y + 0) * th, 0, 1);
-			Vector4 v1(float(x + 0) * tw, -float(y + 1) * th, 0, 1);
-			Vector4 v2(float(x + 1) * tw, -float(y + 0) * th, 0, 1);
-			Vector4 v3(float(x + 1) * tw, -float(y + 1) * th, 0, 1);
+			Vector4 v0 = vertexPos(x + 0, y + 0, tw, th, nHTiles, nVTiles);
+			Vector4 v1 = vertexPos(x + 0, y + 1, tw, th, nHTiles, nVTiles);
+			Vector4 v2 = vertexPos(x + 1, y + 0, tw, th, nHTiles, nVTiles);
+			Vector4 v3 = vertexPos(x + 1, y + 1, tw, th, nHTiles, nVTiles);
 			Vector4 color(1, 1, 1, 1);
 			buff.addVertex(SpriteVertex{
 					v0 + offset, color, region.corner(Box2::BottomLeft) });
@@ -79,4 +79,18 @@ void Frame::render(Renderer* renderer) {
 			index += 4;
 		}
 	}
+}
+
+
+Vector4 Frame::vertexPos(float x, float y,
+                  unsigned tw, unsigned th,
+                  unsigned nht, unsigned nvt) const {
+	Vector4 pos(0, 0, 0, 1);
+	pos[0] = (x < nht - 1)?
+	            x * tw:
+	            size.x() + (x - nht) * tw;
+	pos[1] = (y < nvt - 1)?
+	            -(y * th):
+	            -(size.y() + (y - nvt) * th);
+	return pos;
 }

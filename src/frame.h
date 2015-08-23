@@ -44,6 +44,11 @@ public:
 	Vector3    position;
 	Vector2    size;
 	Sprite*    background;
+
+private:
+	Vector4 vertexPos(float x, float y,
+	                  unsigned tw, unsigned th,
+	                  unsigned nht, unsigned nvt) const;
 };
 
 

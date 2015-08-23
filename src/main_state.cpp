@@ -97,6 +97,7 @@ void MainState::initialize() {
 	_fontTex  = _game->renderer()->getTexture(_fontJson["file"].asString(),
 	        Texture::NEAREST | Texture::REPEAT);
 	_font.reset(new Font(_fontJson, _fontTex));
+	_font->baselineToTop = 12;
 
 	Texture* bgTexture = _game->renderer()->getTexture(
 	            "bg.jpg", Texture::NEAREST | Texture::CLAMP);

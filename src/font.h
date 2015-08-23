@@ -50,6 +50,7 @@ public:
 	            const std::string& msg, unsigned maxWidth = 999999) const;
 
 	Texture*    texture;
+	unsigned    baselineToTop;
 
 protected:
 	struct Glyph {

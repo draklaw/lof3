@@ -204,7 +204,7 @@ void Menu::render(Renderer* renderer) {
 
 	Vector3 pos = _frame.position;
 	pos[0] += margin.x();
-	pos[1] += _frame.size.y() - _font->height() - margin.y();
+	pos[1] += _frame.size.y() - _font->baselineToTop - margin.y();
 	pos[2] += 0.001;
 	Vector3 offset(indent, 0, 0);
 	for(unsigned i = 0; i < _entries.size(); ++i) {
