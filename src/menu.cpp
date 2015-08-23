@@ -26,7 +26,7 @@
 Menu::Menu(Sprite* bg, Font* font, MenuInputs* inputs,
            const Callback& cancelCallback, const Vector2& size)
     : anchor(0, 0),
-      margin(8, 8),
+      margin(12, 12),
       indent(16),
       textColor(1, 1, 1, 1),
       disabledColor(.5, .5, .5, 1),

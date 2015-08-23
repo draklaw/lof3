@@ -97,6 +97,7 @@ void MainState::initialize() {
 //	_inputs.mapScanCode(_menuInputs.right,  SDL_SCANCODE_RIGHT);
 	_inputs.mapScanCode(_menuInputs.ok,     SDL_SCANCODE_RIGHT);
 	_inputs.mapScanCode(_menuInputs.ok,     SDL_SCANCODE_RETURN);
+	_inputs.mapScanCode(_menuInputs.ok,     SDL_SCANCODE_SPACE);
 	_inputs.mapScanCode(_menuInputs.cancel, SDL_SCANCODE_LEFT);
 	_inputs.mapScanCode(_menuInputs.cancel, SDL_SCANCODE_ESCAPE);
 
@@ -115,10 +116,27 @@ void MainState::initialize() {
 	            "menu.png", Texture::NEAREST | Texture::REPEAT);
 	_menuBgSprite = Sprite(menuTexture, 3, 3);
 
+	Texture* warriorTexture = _game->renderer()->getTexture(
+	            "GTP.png", Texture::NEAREST | Texture::REPEAT);
+	_warriorSprite = Sprite(warriorTexture, 1, 1);
 
-	_messageFrame.reset(new Frame(&_menuBgSprite, Vector2(624, 0)));
-	_messageFrame->position = Vector3(8, 0, .9);
-	_messageMargin = 8;
+	Texture* blackMageTexture = _game->renderer()->getTexture(
+	            "MN.png", Texture::NEAREST | Texture::REPEAT);
+	_blackMageSprite = Sprite(blackMageTexture, 1, 1);
+
+	Texture* whiteMageTexture = _game->renderer()->getTexture(
+	            "MB.png", Texture::NEAREST | Texture::REPEAT);
+	_whiteMageSprite = Sprite(whiteMageTexture, 1, 1);
+
+	Texture* ninjaTexture = _game->renderer()->getTexture(
+	            "Ninja.png", Texture::NEAREST | Texture::REPEAT);
+	_ninjaSprite = Sprite(ninjaTexture, 1, 1);
+
+
+	_messageMargin = 12;
+	_messageOutMargin = 8;
+	_messageFrame.reset(new Frame(&_menuBgSprite, Vector2(640 - 2 * _messageOutMargin, 0)));
+	_messageFrame->position = Vector3(_messageOutMargin, 0, .9);
 
 
 	_mainMenu.reset(new Menu(&_menuBgSprite, _font.get(), &_menuInputs));
@@ -233,6 +251,30 @@ void MainState::init() {
 	_bg.setTransform(Transform(Translation(
 	               Vector3(0, _camera.viewBox().max().y() - 480, -.99))));
 
+	Vector3 closestPos(_camera.viewBox().max().x() - 30,
+	                   _camera.viewBox().max().y() - 260, -.8);
+	Vector3 offset(-50, 18, -.01);
+
+	_warrior = _entities.createEntity(_entities.root(), "warrior");
+	_sprites.addComponent(_warrior);
+	_warrior.sprite()->setSprite(&_warriorSprite);
+	_warrior.setTransform(Translation(closestPos + 0 * offset) * Eigen::Scaling(-1, 1, 1));
+
+	_blackMage = _entities.createEntity(_entities.root(), "blackMage");
+	_sprites.addComponent(_blackMage);
+	_blackMage.sprite()->setSprite(&_blackMageSprite);
+	_blackMage.setTransform(Translation(closestPos + 1 * offset) * Eigen::Scaling(-1, 1, 1));
+
+	_whiteMage = _entities.createEntity(_entities.root(), "whiteMage");
+	_sprites.addComponent(_whiteMage);
+	_whiteMage.sprite()->setSprite(&_whiteMageSprite);
+	_whiteMage.setTransform(Translation(closestPos + 2 * offset) * Eigen::Scaling(-1, 1, 1));
+
+	_ninja = _entities.createEntity(_entities.root(), "ninja");
+	_sprites.addComponent(_ninja);
+	_ninja.sprite()->setSprite(&_ninjaSprite);
+	_ninja.setTransform(Translation(closestPos + 3 * offset) * Eigen::Scaling(-1, 1, 1));
+
 //	EntityRef test = _entities.createEntity(_entities.root(), "test");
 //	_sprites.addComponent(test);
 //	test.sprite()->setSprite(&_menuBgSprite);
@@ -274,7 +316,8 @@ void MainState::updateFrame() {
 		_messageFrame->render(_game->renderer());
 
 		_font->render(_game->renderer(),
-		              Vector3(8 + _messageMargin, _messageTextHeight, 0.95),
+		              Vector3(_messageOutMargin + _messageMargin,
+		                      _messageTextHeight, 0.95),
 		              Vector4(1, 1, 1, 1),
 		              _messages.front());
 	}
@@ -299,7 +342,8 @@ void MainState::updateFrame() {
 
 
 void MainState::showMessage(const std::string& message) {
-	_messages.push_back(_font->layoutText(message, 608));
+	_messages.push_back(_font->layoutText(
+	                        message, 640 - (_messageMargin + _messageOutMargin) * 2));
 	if(_messages.size() == 1) {
 		layoutMessage();
 	}
@@ -320,7 +364,8 @@ void MainState::layoutMessage() {
 	log().warning("NLines: ", nLines);
 	_messageFrame->size.y() = _messageMargin * 2 + nLines * _font->height();
 	_messageFrame->position.y() = _camera.viewBox().max().y() - 8 - _messageFrame->size.y();
-	_messageTextHeight = _camera.viewBox().max().y() - 8 - _messageMargin - _font->baselineToTop;
+	_messageTextHeight = _camera.viewBox().max().y() - _messageOutMargin
+	        - _messageMargin - _font->baselineToTop;
 }
 
 

@@ -104,14 +104,23 @@ protected:
 
 	Sprite      _bgSprite;
 	Sprite      _menuBgSprite;
+	Sprite      _warriorSprite;
+	Sprite      _blackMageSprite;
+	Sprite      _whiteMageSprite;
+	Sprite      _ninjaSprite;
 
 	EntityRef   _bg;
+	EntityRef   _warrior;
+	EntityRef   _blackMage;
+	EntityRef   _whiteMage;
+	EntityRef   _ninja;
 
 	std::deque<std::string>
 	            _messages;
 	std::unique_ptr<Frame>
 	            _messageFrame;
 	float       _messageMargin;
+	float       _messageOutMargin;
 	float       _messageTextHeight;
 
 	std::vector<Menu*>
