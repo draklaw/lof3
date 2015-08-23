@@ -101,6 +101,7 @@ void Game::initialize() {
 	_sys->loader().setBasePath(dataPath());
 
 	_window = _sys->createWindow("lof3", 1280, 720);
+	_window->setFullscreen(true);
 	_sys->setVSyncEnabled(false);
 	log().info("VSync: ", _sys->isVSyncEnabled()? "on": "off");
 

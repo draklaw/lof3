@@ -27,6 +27,7 @@
 
 #include <lair/core/lair.h>
 #include <lair/core/log.h>
+#include <lair/core/signal.h>
 
 #include <lair/utils/interp_loop.h>
 #include <lair/utils/input.h>
@@ -83,6 +84,8 @@ protected:
 	EntityManager          _entities;
 	SpriteComponentManager _sprites;
 	InputManager           _inputs;
+
+	SlotTracker _slotTracker;
 
 	OrthographicCamera _camera;
 

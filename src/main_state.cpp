@@ -35,6 +35,8 @@ MainState::MainState(Game* game)
       _sprites(_game->renderer()),
       _inputs(_game->sys(), &_game->log()),
 
+      _slotTracker(),
+
       _camera(),
 
       _initialized(false),
@@ -77,6 +79,8 @@ void MainState::initialize() {
 	_loop.setMaxFrameDuration(_loop.frameDuration() * 3);
 	_loop.setFrameMargin(     _loop.frameDuration() / 2);
 
+	_game->window()->onResize.connect(std::bind(&MainState::layoutScreen, this))
+	        .track(_slotTracker);
 	layoutScreen();
 
 
@@ -104,7 +108,7 @@ void MainState::initialize() {
 	_font->baselineToTop = 12;
 
 	Texture* bgTexture = _game->renderer()->getTexture(
-	            "bg.jpg", Texture::NEAREST | Texture::CLAMP);
+	            "bg.png", Texture::NEAREST | Texture::CLAMP);
 	_bgSprite = Sprite(bgTexture);
 
 	Texture* menuTexture = _game->renderer()->getTexture(
@@ -172,6 +176,8 @@ void MainState::shutdown() {
 	_menuStack.clear();
 	_mainMenu.reset();
 
+	_slotTracker.disconnectAll();
+
 	_initialized = false;
 }
 
@@ -210,6 +216,7 @@ void MainState::quit() {
 void MainState::layoutScreen() {
 	int w = _game->window()->width();
 	int h = _game->window()->height();
+	glViewport(0, 0, w, h);
 	_camera.setViewBox(Box3(
 		Vector3(  0,           0, -1),
 		Vector3(640, 640 * h / w,  1)
@@ -244,7 +251,8 @@ void MainState::updateTick() {
 void MainState::updateFrame() {
 	_inputs.sync();
 	if(!_messages.empty()) {
-		if(_menuInputs.ok->justPressed()) {
+		if(_menuInputs.ok->justPressed()
+		|| _menuInputs.cancel->justPressed()) {
 			nextMessage();
 		}
 	} else if(!_menuStack.empty()) {
@@ -258,10 +266,11 @@ void MainState::updateFrame() {
 	_entities.updateWorldTransform();
 	_sprites.render(_loop.frameInterp(), _camera);
 
-	for(Menu* menu: _menuStack) {
-		menu->render(_game->renderer());
-	}
-	if(!_messages.empty()) {
+	if(_messages.empty()) {
+		for(Menu* menu: _menuStack) {
+			menu->render(_game->renderer());
+		}
+	} else {
 		_messageFrame->render(_game->renderer());
 
 		_font->render(_game->renderer(),
