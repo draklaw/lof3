@@ -21,9 +21,8 @@
 
 #include "fight.h"
 
-Rules::Rules(Logger& logger, Fight* fight, const string& ruleset)
+Rules::Rules(Logger& logger, const string& ruleset)
 :	_logger(&logger),
-	_fight(fight),
 	bab{3,1,1,5},
 	hd{30,15,10,20},
 	mp{},
@@ -47,7 +46,6 @@ Rules::Rules(Logger& logger, Fight* fight, const string& ruleset)
 	party_size(4)
 {
 	log().setLevel(LogLevel::Warning);
-	boss_target = party_size;
 }
 
 Rules::~Rules()
@@ -59,121 +57,6 @@ Logger& Rules::log()
 	return _logger;
 }
 
-bool Rules::can_haz (Curse curse, Target t)
-{
-	// Tier test.
-	switch (curse)
-	{
-		case VORPAL:
-		case DISPEL:
-			if (_fight->tier < 2) return false;
-		case SUMMON + TOMBERRY:
-		case SUMMON + SPRITES:
-		case STORM:
-		case MUD:
-		case SWITCH:
-			if (_fight->tier < 1) return false;
-		case SUMMON + MAGELING:
-		case CRIPPLE:
-		case DRAIN:
-		case STRIKE:
-		case PUNCH:
-		case SCAN:
-			break;
-		default:
-			assert(curse < NB_CURSES);
-			return false;
-	}
-
-	// Target test.
-	switch (curse)
-	{
-		// Untargeted spells.
-		case SUMMON + SPRITES:
-		case SUMMON + MAGELING:
-		case SUMMON + TOMBERRY:
-			// Don't get summonning sickness.
-			if (_fight->horde.size() == max_summons)
-				return false;
-		case STORM:
-		case SCAN:
-		case MUD:
-			if (t == -1)
-				return true;
-			else return false;
-
-		// Target must be a live PC.
-		case PUNCH:
-		case STRIKE:
-		case VORPAL:
-		case CRIPPLE:
-		case DRAIN:
-		case DISPEL:
-			if (t < party_size && _fight->party[t].hp != 0)
-				return true;
-			else return false;
-
-		// Target must be a valid element.
-		case SWITCH:
-			if (t < NB_ELEMS && _fight->boss.elem != t)
-				return true;
-			else return false;
-
-		// Nope.
-		default:
-			return false;
-	}
-}
-
-void Rules::curse (Curse c, Target t)
-{
-	// Sanity check.
-	assert (can_haz(c, t));
-	
-	switch (c)
-	{
-		case PUNCH:
-			damage(t, curse_power[c], _fight->boss.elem);
-			break;
-
-		// Unimplemented.
-		default://TODO
-			log().log("I'm sorry, Dave. I'm afraid I can't do that.");
-	}
-}
-
-void Rules::play (Target user, Spell s, Target t)
-{
-	// Sanity check.
-	assert (s < NB_SPELLS);
-	assert (user != boss_target);
-	assert (user < boss_target + 1 + _fight->horde.size());
-
-	switch (s)
-	{
-		case AA:
-			//TODO: Add elemental damage for enchanted weapons.
-			damage(boss_target, spell_power[s], NONE);
-			break;
-
-		// Unimplemented.
-		default://TODO
-			log().log("I cannot obey this command because I'm not a wombat.");
-	}
-
-	// User is a PC.
-	if (user < boss_target)
-	{
-		PC& pc = _fight->party[user];
-		pc.init = init[pc.job];
-	}
-	else // User is a minion.
-	{
-		Minion& m = _fight->horde[user - boss_target - 1];
-		m.init = minion_init[m.spawn];
-	}
-}
-
 double Rules::elem_factor (Element attack, Element defense)
 {
 	// No elemental defense.
@@ -183,7 +66,7 @@ double Rules::elem_factor (Element attack, Element defense)
 	// Trying to attack the same element.
 	if (attack == defense)
 	{
-		log().log("It's not very effective...");
+		log().info("It's not very effective...");
 		return elem_multiplier[2];
 	}
 
@@ -191,56 +74,10 @@ double Rules::elem_factor (Element attack, Element defense)
 	// Attacking the opposite element.
 	if (defense+1 / 2 == attack+1 / 2)
 	{
-		log().log("It's super effective !");
+		log().info("It's super effective !");
 		return elem_multiplier[1];
 	}
 
 	// No match in elemental defense.
 	return elem_multiplier[0];
-}
-
-void Rules::damage (Target t, unsigned amount, Element e)
-{
-	unsigned dmg = amount;
-	// PC target
-	if (t < boss_target)
-	{
-		dmg *= elem_factor(e, NONE);
-		unsigned& hp = _fight->party[t].hp;
-
-		if (hp > dmg)
-			hp -= dmg;
-		else
-		{
-			hp = 0;
-			//TODO: Kill the PC.
-		}
-	}
-	else if (t == boss_target)
-	{
-		Boss& b = _fight->boss;
-		dmg *= elem_factor(e, b.elem);
-
-		if (b.hp > dmg)
-			b.hp -= dmg;
-		else
-		{
-			b.hp = 0;
-			//TODO: Kill the boss and his minions.
-		}
-	}
-	else // Minion target
-	{
-		Minion& m = _fight->horde[t - boss_target - 1];
-		dmg *= elem_factor(e, m.elem);
-
-		if (m.hp > dmg)
-			m.hp -= dmg;
-		else
-		{
-			m.hp = 0;
-			_fight->horde.erase(_fight->horde.begin() + t - boss_target - 1);
-			//TODO: Kill a minion.
-		}
-	}
 }

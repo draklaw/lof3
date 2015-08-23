@@ -96,27 +96,8 @@ struct Player {
 	unsigned item_favors[NB_ITEMS];   // Favorite consumables
 };
 
-// 0 ... boss_target : target PC
-//    boss_target    : target boss
-// boss_target ... + : target minion
-typedef unsigned Target;
-
 class Rules {
 public:
-	Target boss_target;
-
-	Rules(Logger& logger, Fight* fight, const string& rules_source);
-	~Rules();
-
-	// Can curse c be used on target t ?
-	bool can_haz (Curse c, Target t);
-	// As the boss, use curse c on target t.
-	void curse (Curse c, Target t);
-	// As user, use ability s on target t.
-	void play (Target user, Spell s, Target t);
-	// As one of the PCs, use item i on target t.
-	void use (Item i, Target t);
-
 	// Class-specific stats (per level)
 	unsigned bab[NB_JOBS];       // Base Attack Bonus
 	unsigned hd[NB_JOBS];        // Hit Dice
@@ -146,16 +127,15 @@ public:
 	unsigned max_summons;       // Maximum number of concurrent minions.
 	unsigned party_size;        // 4.
 
-private:
-	Fight* _fight;
-
-	Logger _logger;
-	Logger& log();
+	Rules(Logger& logger, const string& rules_source);
+	~Rules();
 
 	// Return the efficiency factor of attacking defense with attack.
 	double elem_factor (Element attack, Element defense);
-	// Inflict amount damage with element e to target t.
-	void damage (Target t, unsigned amount, Element e);
+
+private:
+	Logger _logger;
+	Logger& log();
 };
 
 #endif
