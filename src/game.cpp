@@ -47,6 +47,10 @@ Game::Game()
 
       _mainState(nullptr) {
 	_mlogger.addBackend(&_logBackend);
+	dbgLogger.setMaster(&_mlogger);
+	dbgLogger.setDefaultModuleName("DEBUG");
+	dbgLogger.setLevel(LogLevel::Debug);
+
 	log().log("Starting game...");
 
 #ifdef DATA_DIR
@@ -97,6 +101,7 @@ void Game::initialize() {
 	_sys->loader().setBasePath(dataPath());
 
 	_window = _sys->createWindow("lof3", 1280, 720);
+	//_window->setFullscreen(true);
 	_sys->setVSyncEnabled(false);
 	log().info("VSync: ", _sys->isVSyncEnabled()? "on": "off");
 

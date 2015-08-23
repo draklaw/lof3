@@ -18,6 +18,38 @@
 //
 
 
-#include "game.h"
+#ifndef _LOF3_FRAME_H
+#define _LOF3_FRAME_H
 
 
+#include <lair/core/lair.h>
+#include <lair/core/log.h>
+
+
+using namespace lair;
+
+
+namespace lair {
+class Sprite;
+class Renderer;
+}
+
+
+class Frame {
+public:
+	Frame(Sprite* bg, const Vector2& size);
+
+	void render(Renderer* renderer);
+
+	Vector3    position;
+	Vector2    size;
+	Sprite*    background;
+
+private:
+	Vector4 vertexPos(float x, float y,
+	                  unsigned tw, unsigned th,
+	                  unsigned nht, unsigned nvt) const;
+};
+
+
+#endif

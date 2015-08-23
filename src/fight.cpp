@@ -30,6 +30,7 @@ Fight::Fight(Logger& logger, Player& p)
 	boss{rules.boss_hp[0], NONE, {0}, {0}, rules.boss_init},
 	tier(0)
 {
+	log().setLevel(LogLevel::Warning);
 	log().log("Knife fight : BEGIN !");
 
 	party.push_back({

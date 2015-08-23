@@ -46,6 +46,7 @@ Rules::Rules(Logger& logger, Fight* fight, const string& ruleset)
 	max_summons(5),
 	party_size(4)
 {
+	log().setLevel(LogLevel::Warning);
 	boss_target = party_size;
 }
 
