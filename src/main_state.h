@@ -39,6 +39,7 @@
 #include <lair/ec/sprite_component.h>
 
 #include "menu.h"
+#include "text_component.h"
 
 #include "game_state.h"
 
@@ -71,6 +72,8 @@ public:
 	EntityRef createSprite(Sprite* sprite, const Vector3& pos,
 	                       const Vector2& scale,
 	                       const char* name = nullptr);
+	EntityRef createDamageText(const std::string& msg, const Vector3& pos,
+	                           const Vector4& color = Vector4(1, 1, 1, 1));
 	void init();
 
 	void updateTick();
@@ -90,6 +93,7 @@ protected:
 
 	EntityManager          _entities;
 	SpriteComponentManager _sprites;
+	TextComponentManager   _texts;
 	InputManager           _inputs;
 
 	SlotTracker _slotTracker;

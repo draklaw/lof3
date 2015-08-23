@@ -251,6 +251,20 @@ EntityRef MainState::createSprite(Sprite* sprite, const Vector3& pos,
 }
 
 
+EntityRef MainState::createDamageText(const std::string& text, const Vector3& pos,
+                                      const Vector4& color) {
+	EntityRef entity = _entities.createEntity(_entities.root(), "damageText");
+	_texts.addComponent(entity);
+	TextComponent* comp = _texts.get(entity);
+	comp->font = _font.get();
+	comp->text = text;
+	comp->color = color;
+	Transform t = Transform::Identity();
+	t.translate(pos);
+	entity.setTransform(t);
+}
+
+
 void MainState::init() {
 	log().log("Initialize main state.");
 
@@ -324,6 +338,7 @@ void MainState::updateFrame() {
 
 	_entities.updateWorldTransform();
 	_sprites.render(_loop.frameInterp(), _camera);
+	_texts.render(  _loop.frameInterp(), _game->renderer());
 
 	if(_messages.empty()) {
 		for(Menu* menu: _menuStack) {
