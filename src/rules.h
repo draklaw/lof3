@@ -97,6 +97,10 @@ struct Player {
 };
 
 class Rules {
+private:
+	Logger _logger;
+	Logger& log();
+
 public:
 	// Class-specific stats (per level)
 	unsigned bab[NB_JOBS];       // Base Attack Bonus
@@ -132,10 +136,6 @@ public:
 
 	// Return the efficiency factor of attacking defense with attack.
 	double elem_factor (Element attack, Element defense);
-
-private:
-	Logger _logger;
-	Logger& log();
 };
 
 #endif
