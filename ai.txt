@@ -1,0 +1,35 @@
+- A player will either follow a strat, play his favorite moves or experiment.
+- Strats are conditional actions, hard-coded and close to optimal.
+- A player's favorite moves has little to no relationship with their actual efficiency.
+- Experimenting consists in trying random moves, and occurs more when the PCs are in trouble.
+- Dangerous players always favor strategy and rarely need to experiment.
+
+> Strats :
+- The player has few or none of them at start.
+-> As time passes, the player gets better and unlocks new strats.
+-> If the players stumbles on a strat through experimenting, he will remember it.
+- The most efficient strats may come in two flavors for balance : "sometimes" and "always".
+* Use spells : Your mages have spells. Use them.
+* Actual damage : Avoid using the boss's current element.
+* Counter damage : Use the most efficient magic (or items ?) against the boss.
+* Counter defense : Raise shields matching the boss's current element.
+* Raise dead : If a PC is out, raise him ASAP (duh !).
+* Focus sprites : Quickly mop off anything that heals the boss.
+* Focus Tomberry : KEEP IT OFF ! MAKE IT GO AWAY !
+* Clear status : Promptly remove disables from affected PCs.
+* Use items : Learn to use potions, ethers and quills.
+* Keep up the heal : Make sure the healer stays healthy and buffed, and use him.
+* Protect the weak : If a PC is low on life, have the tank protect them.
+* DPS run : If the boss is lowlife enough, give everything to finish him.
+
+> Favs :
+- Each action, item and spell has a mostly random favor value.
+- Pissed off players mostly enjoy winning, and may even favor strats.
+- Players will buy more of their favorite items.
+- Players *slowly* learn to love items and spells that worked well for them.
+-> Shields and armors are an exception : players will learn to love what they lacked.
+
+> QTEs :
+- Each player-QTE has a practice score, which increases each time he faces the QTE.
+- The success rate of QTEs improves with practice.
+- Above some threshold, the odds of scoring a perfect rise quickly.

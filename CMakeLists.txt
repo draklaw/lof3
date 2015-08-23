@@ -48,6 +48,9 @@ add_executable(lof3
 	src/frame.cpp
 	src/font.cpp
 	src/menu.cpp
+
+	src/fight.cpp
+
 	src/game.cpp
 	src/main_state.cpp
 	src/main.cpp

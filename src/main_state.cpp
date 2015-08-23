@@ -21,6 +21,7 @@
 #include "font.h"
 #include "menu.h"
 #include "game.h"
+#include "fight.h"
 
 #include "main_state.h"
 
