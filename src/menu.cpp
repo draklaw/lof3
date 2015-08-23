@@ -95,6 +95,16 @@ void Menu::enableEntry(unsigned i) {
 }
 
 
+unsigned Menu::width() const {
+	return _frame.size.x();
+}
+
+
+unsigned Menu::height() const {
+	return _frame.size.y();
+}
+
+
 unsigned Menu::addEntry(const std::string& label, uint8 status,
                             const Callback& callback) {
 	_entries.emplace_back(Entry{

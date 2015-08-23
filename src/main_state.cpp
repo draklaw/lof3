@@ -18,6 +18,8 @@
 //
 
 
+#include <functional>
+
 #include "font.h"
 #include "menu.h"
 #include "game.h"
@@ -28,12 +30,35 @@
 
 MainState::MainState(Game* game)
 	: _game(game),
+
       _entities(_game->log()),
       _sprites(_game->renderer()),
       _inputs(_game->sys(), &_game->log()),
+
       _camera(),
+
+      _initialized(false),
       _running(false),
-      _loop(_game->sys()) {
+      _loop(_game->sys()),
+      _fpsTime(0),
+      _fpsCount(0),
+
+      _menuInputs(),
+
+      _fontTex(nullptr),
+      _fontJson(),
+      _font(),
+
+      _bgSprite(),
+      _menuBgSprite(),
+
+      _bg(),
+
+      _menuStack(),
+      _mainMenu(),
+      _switchMenu(),
+      _spellMenu(),
+      _summonMenu() {
 }
 
 
@@ -62,9 +87,9 @@ void MainState::initialize() {
 	_inputs.mapScanCode(_menuInputs.down,   SDL_SCANCODE_DOWN);
 //	_inputs.mapScanCode(_menuInputs.left,   SDL_SCANCODE_LEFT);
 //	_inputs.mapScanCode(_menuInputs.right,  SDL_SCANCODE_RIGHT);
-	_inputs.mapScanCode(_menuInputs.ok,     SDL_SCANCODE_LEFT);
-	_inputs.mapScanCode(_menuInputs.cancel, SDL_SCANCODE_RIGHT);
+	_inputs.mapScanCode(_menuInputs.ok,     SDL_SCANCODE_RIGHT);
 	_inputs.mapScanCode(_menuInputs.ok,     SDL_SCANCODE_RETURN);
+	_inputs.mapScanCode(_menuInputs.cancel, SDL_SCANCODE_LEFT);
 	_inputs.mapScanCode(_menuInputs.cancel, SDL_SCANCODE_ESCAPE);
 
 
@@ -82,22 +107,60 @@ void MainState::initialize() {
 	_menuBgSprite = Sprite(menuTexture, 3, 3);
 
 
-	_menu.reset(new Menu(&_menuBgSprite, _font.get(), &_menuInputs));
-	_menu->addEntry("Attack");
-	_menu->addEntry("Magic", Menu::DISABLED);
-	_menu->addEntry("Analyse");
-	_menu->addEntry("Test 1");
-	_menu->addEntry("Test 2", Menu::HIDDEN);
-	_menu->addEntry("Test 3");
-	_menu->layout();
-	_menu->show(Vector3(64, 64, 0));
+	_mainMenu.reset(new Menu(&_menuBgSprite, _font.get(), &_menuInputs));
+	_switchMenu.reset(new Menu(&_menuBgSprite, _font.get(), &_menuInputs,
+	                           std::bind(&MainState::closeMenu, this)));
+	_spellMenu.reset(new Menu(&_menuBgSprite, _font.get(), &_menuInputs,
+	                          std::bind(&MainState::closeMenu, this)));
+	_summonMenu.reset(new Menu(&_menuBgSprite, _font.get(), &_menuInputs,
+	                           std::bind(&MainState::closeMenu, this)));
+
+	_mainMenu->addEntry("Attack");
+	_mainMenu->addEntry("Switch", Menu::ENABLED,
+	                    std::bind(&MainState::openMenu, this, _switchMenu.get()));
+	_mainMenu->addEntry("Spell", Menu::ENABLED,
+	                    std::bind(&MainState::openMenu, this, _spellMenu.get()));
+	_mainMenu->addEntry("Summon", Menu::ENABLED,
+	                    std::bind(&MainState::openMenu, this, _summonMenu.get()));
+	_mainMenu->addEntry("Scan");
+	_mainMenu->addEntry("QTE",     Menu::HIDDEN);
+	_mainMenu->addEntry("Twist 1", Menu::HIDDEN);
+	_mainMenu->layout();
+	_mainMenu->show(Vector3(0, 0, 0));
+
+	_switchMenu->addEntry("None");
+	_switchMenu->addEntry("Fire");
+	_switchMenu->addEntry("Ice");
+	_switchMenu->addEntry("Thunder");
+	_switchMenu->addEntry("Acid");
+	_switchMenu->layout();
+	_switchMenu->show(Vector3(_mainMenu->width(), 16, .1));
+
+	_spellMenu->addEntry("Storm");
+	_spellMenu->addEntry("Strike");
+	_spellMenu->addEntry("Crippling strike");
+	_spellMenu->addEntry("Soul drain");
+	_spellMenu->addEntry("Vorpal sword");
+	_spellMenu->addEntry("Mud pit");
+	_spellMenu->addEntry("Dispel magic");
+	_spellMenu->layout();
+	_spellMenu->show(Vector3(_mainMenu->width(), 16, .1));
+
+	_summonMenu->addEntry("Sprites");
+	_summonMenu->addEntry("Tomberry");
+	_summonMenu->addEntry("Mageling");
+	_summonMenu->layout();
+	_summonMenu->show(Vector3(_mainMenu->width(), 16, .1));
+
+	openMenu(_mainMenu.get());
 
 	_initialized = true;
 }
 
 
 void MainState::shutdown() {
-	_menu.reset();
+	_menuStack.clear();
+	_mainMenu.reset();
 
 	_initialized = false;
 }
@@ -152,9 +215,9 @@ void MainState::init() {
 	_bg.sprite()->setSprite(&_bgSprite);
 	_bg.setTransform(Transform(Translation(Vector3(0, _camera.viewBox().max().y() - 480, -.99))));
 
-	EntityRef test = _entities.createEntity(_entities.root(), "test");
-	_sprites.addComponent(test);
-	test.sprite()->setSprite(&_menuBgSprite);
+//	EntityRef test = _entities.createEntity(_entities.root(), "test");
+//	_sprites.addComponent(test);
+//	test.sprite()->setSprite(&_menuBgSprite);
 }
 
 
@@ -165,7 +228,9 @@ void MainState::updateTick() {
 
 void MainState::updateFrame() {
 	_inputs.sync();
-	_menu->update();
+	if(!_menuStack.empty()) {
+		_menuStack.back()->update();
+	}
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -174,11 +239,9 @@ void MainState::updateFrame() {
 	_entities.updateWorldTransform();
 	_sprites.render(_loop.frameInterp(), _camera);
 
-	_menu->render(_game->renderer());
-
-//	_font->render(_game->renderer(), Vector3(64, 64 + 128 - _font->height(), .99),
-//	              "Test\naoeu_ht nspq. !?\nThe quick brown fox jumps over the lazy dog",
-//	              128);
+	for(Menu* menu: _menuStack) {
+		menu->render(_game->renderer());
+	}
 
 	_game->renderer()->spriteShader()->use();
 	_game->renderer()->spriteShader()->setTextureUnit(0);
@@ -196,6 +259,16 @@ void MainState::updateFrame() {
 	}
 
 	LAIR_LOG_OPENGL_ERRORS_TO(log());
+}
+
+
+void MainState::openMenu(Menu* menu) {
+	_menuStack.push_back(menu);
+}
+
+
+void MainState::closeMenu() {
+	_menuStack.pop_back();
 }
 
 

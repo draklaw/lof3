@@ -22,6 +22,8 @@
 #define _LOF3_MAIN_STATE_H
 
 
+#include <vector>
+
 #include <lair/core/lair.h>
 #include <lair/core/log.h>
 
@@ -65,6 +67,9 @@ public:
 	void updateTick();
 	void updateFrame();
 
+	void openMenu(Menu* menu);
+	void closeMenu();
+
 	Logger& log();
 
 protected:
@@ -94,8 +99,16 @@ protected:
 
 	EntityRef   _bg;
 
+	std::vector<Menu*>
+	            _menuStack;
 	std::unique_ptr<Menu>
-	            _menu;
+	            _mainMenu;
+	std::unique_ptr<Menu>
+	            _switchMenu;
+	std::unique_ptr<Menu>
+	            _spellMenu;
+	std::unique_ptr<Menu>
+	            _summonMenu;
 };
 
 

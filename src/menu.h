@@ -66,6 +66,9 @@ public:
 	void disableEntry(unsigned i);
 	void enableEntry(unsigned i);
 
+	unsigned width() const;
+	unsigned height() const;
+
 	unsigned addEntry(const std::string& label, uint8 status = ENABLED,
 	                  const Callback& callback = Callback());
 
