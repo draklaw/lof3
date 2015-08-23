@@ -1,0 +1,32 @@
+- The PCs may have access to the following spells :
+For short, Tank is the Fighter, DPS is the Ninja, WM and BM stand for White Mage and Black Mage respectively.
+* Smite (Tank) : Increased damage on one target.
+* Deep cut (DPS) : A smite by any other name.
+* Thousand cuts (DPS) : An attack against all targets.
+* Protect (Tank) : Take damage in place of another PCs.
+* Heal (WM) : Restores a large amount of HP on one PCs.
++> Heal bombing does not work, but the player may not know that.
+* Nurses (WM) : Restores a small amount of HP on all PCs.
+* Resurrect (WM) : Raises a dead ally and gives him back some HP.
+* Shield [ELEM] (WM) : Gives resistance to an element for a few turns.
+* Nuke [ELEM] (BM) : Deal a large amount of elemental damage on one target.
+* AoE [ELEM] (BM) : Deal a moderate amount of elemental damage on all hostiles.
+
+- The boss has access to the following curses :
+* Switch [ELEM] : Lets him change his current element and possibly remove it.
+* Storm [ELEM] : An AoE by any other name.
+* Strike [ELEM] : A nuke by any other name.
+* Crippling strike : Removes some HP and has a fair chance to cripple the target.
+* Soul drain : Removes some MP and has a fair chance to silence the target.
+* Vorpal sword : A weak attack with a slight chance to oneshot the target.
+* Mud pit : Slows all PCs.
+* Dispel magic : Removes all active buffs (shields) from a target.
+
+- The boss can also curse the following minions into existence :
+* Sprites : These little dudes heal any bad guy, prioritizing the boss, but die instantly.
+* Tomberry : This guy instakills a PC everytime he plays, but has very low init. (HP cost ?)
+* Mageling [ELEM] : These guys casts shields on other bad guys, or attack the PC using their element.
+
+- The boss can prompt the player for an Easy/Medium or Hard QTE, which has a cooldown.
+
+- The boss can also scan the PC party, and see their level/equipment bonuses and active buffs.

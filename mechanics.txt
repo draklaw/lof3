@@ -1,0 +1,43 @@
+- The combat system mostly follows that of old-style JRPGs.
+- Each combattant plays in turn, and has to wait a specific delay before playing again.
+- Players Characters may attack, spend mana to cast spells or use techniques, or use items on their fellow players.
+- The boss in front of them can also attack, cast his own magic or summon minions.
+
+> Elements :
+- There are several elements, and each of them has an opposing element.
+- Elemental attacks deal more damage than normal ones.
+- If he so chooses, the boss can have a currently active element :
+* It lets him use elemental spells and attacks.
+* It makes him immune to this element.
+* It makes him more vulnerable to the opposing element.
+- Elemental shields reduce the incoming damage from their element.
+
+> Crowd control :
+- Several effects can prevent the PCs from acting :
+* Silence : Prevents from using spells.
+* Cripple : Prevents from using techniques.
+* Slow : Increases the delay between play turns.
+
+> Stuff and level :
+- The PCs come into the fight with experience and equipment.
+- Levels provide them with various fixed bonuses :
+* More damage.
+* More hit points and mana points.
+* More available spells.
+* More powerful spells.
+* Access to better equipments.
+- Equipment can also provide :
+* More damage.
+* Elemental damage.
+* Elemental resistance.
+* Crowd control immunity.
+* Death protection : deadly damage instead leaves 1HP once per life.
+* Resurrection : pumps player back to full health when dying once per fight.
+* Health/Mana regen.
+
+> QTEs :
+- At the boss's leisure, the player can be prompted for a QTE.
+-> The player will score some amount of success againt it, depending on his skill.
+-> Failing during a QTE will inflict massive damage on the PC party.
+-> If the player does not fail at all, he scores a Perfect, damaging the boss instead.
+
