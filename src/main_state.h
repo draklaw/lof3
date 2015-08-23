@@ -56,6 +56,8 @@ public:
 	MainState(Game* game);
 	~MainState();
 
+	Sprite loadSprite(const char* file, unsigned th = 1, unsigned tv = 1);
+
 	virtual void initialize();
 	virtual void shutdown();
 
@@ -64,6 +66,11 @@ public:
 
 	void layoutScreen();
 
+	EntityRef createSprite(Sprite* sprite, const Vector3& pos,
+	                       const char* name = nullptr);
+	EntityRef createSprite(Sprite* sprite, const Vector3& pos,
+	                       const Vector2& scale,
+	                       const char* name = nullptr);
 	void init();
 
 	void updateTick();
@@ -106,12 +113,15 @@ protected:
 	Sprite      _healthEmptySprite;
 	Sprite      _healthFullSprite;
 	Sprite      _menuBgSprite;
+	Sprite      _boss1Sprite;
 	Sprite      _warriorSprite;
 	Sprite      _blackMageSprite;
 	Sprite      _whiteMageSprite;
 	Sprite      _ninjaSprite;
 
 	EntityRef   _bg;
+
+	EntityRef   _boss;
 
 	EntityRef   _warriorHealthEmpty;
 	EntityRef   _warriorHealthFull;

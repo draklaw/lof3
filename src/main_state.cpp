@@ -72,6 +72,13 @@ MainState::~MainState() {
 }
 
 
+Sprite MainState::loadSprite(const char* file, unsigned th, unsigned tv) {
+	Texture* tex = _game->renderer()->getTexture(
+	            file, Texture::NEAREST | Texture::CLAMP);
+	return Sprite(tex, th, tv);
+}
+
+
 void MainState::initialize() {
 	_loop.reset();
 	_loop.setTickDuration(    1000000000 /  60);
@@ -108,37 +115,15 @@ void MainState::initialize() {
 	_font.reset(new Font(_fontJson, _fontTex));
 	_font->baselineToTop = 12;
 
-	Texture* bgTexture = _game->renderer()->getTexture(
-	            "bg.png", Texture::NEAREST | Texture::CLAMP);
-	_bgSprite = Sprite(bgTexture);
-
-	Texture* healthEmptyTexture = _game->renderer()->getTexture(
-	            "health_bar_empty.png", Texture::NEAREST | Texture::CLAMP);
-	_healthEmptySprite = Sprite(healthEmptyTexture);
-
-	Texture* healthFullTexture = _game->renderer()->getTexture(
-	            "health_bar_full.png", Texture::NEAREST | Texture::CLAMP);
-	_healthFullSprite = Sprite(healthFullTexture);
-
-	Texture* menuTexture = _game->renderer()->getTexture(
-	            "menu.png", Texture::NEAREST | Texture::REPEAT);
-	_menuBgSprite = Sprite(menuTexture, 3, 3);
-
-	Texture* warriorTexture = _game->renderer()->getTexture(
-	            "GTP.png", Texture::NEAREST | Texture::REPEAT);
-	_warriorSprite = Sprite(warriorTexture, 1, 1);
-
-	Texture* blackMageTexture = _game->renderer()->getTexture(
-	            "MN.png", Texture::NEAREST | Texture::REPEAT);
-	_blackMageSprite = Sprite(blackMageTexture, 1, 1);
-
-	Texture* whiteMageTexture = _game->renderer()->getTexture(
-	            "MB.png", Texture::NEAREST | Texture::REPEAT);
-	_whiteMageSprite = Sprite(whiteMageTexture, 1, 1);
-
-	Texture* ninjaTexture = _game->renderer()->getTexture(
-	            "Ninja.png", Texture::NEAREST | Texture::REPEAT);
-	_ninjaSprite = Sprite(ninjaTexture, 1, 1);
+	_bgSprite          = loadSprite("bg.png");
+	_healthEmptySprite = loadSprite("health_bar_empty.png");
+	_healthFullSprite  = loadSprite("health_bar_full.png");
+	_menuBgSprite      = loadSprite("menu.png", 3, 3);
+	_boss1Sprite       = loadSprite("BigBoss1.png");
+	_warriorSprite     = loadSprite("GTP.png");
+	_blackMageSprite   = loadSprite("MN.png");
+	_whiteMageSprite   = loadSprite("MB.png");
+	_ninjaSprite       = loadSprite("Ninja.png");
 
 
 	_messageMargin = 12;
@@ -250,6 +235,22 @@ void MainState::layoutScreen() {
 }
 
 
+EntityRef MainState::createSprite(Sprite* sprite, const Vector3& pos,
+                                  const char* name) {
+	return createSprite(sprite, pos, Vector2(1, 1), name);
+}
+
+
+EntityRef MainState::createSprite(Sprite* sprite, const Vector3& pos,
+                                  const Vector2& scale, const char* name) {
+	EntityRef entity = _entities.createEntity(_entities.root(), name);
+	_sprites.addComponent(entity);
+	entity.sprite()->setSprite(sprite);
+	entity.setTransform(Translation(pos) * Eigen::Scaling(scale.x(), scale.y(), 1.f));
+	return entity;
+}
+
+
 void MainState::init() {
 	log().log("Initialize main state.");
 
@@ -278,25 +279,18 @@ void MainState::init() {
 	                   _camera.viewBox().max().y() - 260, -.8);
 	Vector3 offset(-50, 18, -.01);
 
-	_warrior = _entities.createEntity(_entities.root(), "warrior");
-	_sprites.addComponent(_warrior);
-	_warrior.sprite()->setSprite(&_warriorSprite);
-	_warrior.setTransform(Translation(closestPos + 0 * offset) * Eigen::Scaling(-1, 1, 1));
+	_boss      = createSprite(&_boss1Sprite,
+	                          Vector3(240, _camera.viewBox().max().y() - 240, -.815),
+	                          Vector2(-1, 1), "ninja");
 
-	_blackMage = _entities.createEntity(_entities.root(), "blackMage");
-	_sprites.addComponent(_blackMage);
-	_blackMage.sprite()->setSprite(&_blackMageSprite);
-	_blackMage.setTransform(Translation(closestPos + 1 * offset) * Eigen::Scaling(-1, 1, 1));
-
-	_whiteMage = _entities.createEntity(_entities.root(), "whiteMage");
-	_sprites.addComponent(_whiteMage);
-	_whiteMage.sprite()->setSprite(&_whiteMageSprite);
-	_whiteMage.setTransform(Translation(closestPos + 2 * offset) * Eigen::Scaling(-1, 1, 1));
-
-	_ninja = _entities.createEntity(_entities.root(), "ninja");
-	_sprites.addComponent(_ninja);
-	_ninja.sprite()->setSprite(&_ninjaSprite);
-	_ninja.setTransform(Translation(closestPos + 3 * offset) * Eigen::Scaling(-1, 1, 1));
+	_warrior   = createSprite(&_warriorSprite, closestPos + 0 * offset,
+	                        Vector2(-1, 1), "warrior");
+	_blackMage = createSprite(&_blackMageSprite, closestPos + 1 * offset,
+	                        Vector2(-1, 1), "blackMage");
+	_whiteMage = createSprite(&_whiteMageSprite, closestPos + 2 * offset,
+	                        Vector2(-1, 1), "whiteMage");
+	_ninja     = createSprite(&_ninjaSprite, closestPos + 3 * offset,
+	                        Vector2(-1, 1), "ninja");
 
 //	EntityRef test = _entities.createEntity(_entities.root(), "test");
 //	_sprites.addComponent(test);
@@ -384,7 +378,6 @@ void MainState::nextMessage() {
 
 void MainState::layoutMessage() {
 	unsigned nLines = std::count(_messages.front().begin(), _messages.front().end(), '\n') + 1;
-	log().warning("NLines: ", nLines);
 	_messageFrame->size.y() = _messageMargin * 2 + nLines * _font->height();
 	_messageFrame->position.y() = _camera.viewBox().max().y() - 8 - _messageFrame->size.y();
 	_messageTextHeight = _camera.viewBox().max().y() - _messageOutMargin
