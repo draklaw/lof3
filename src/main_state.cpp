@@ -139,6 +139,12 @@ void MainState::initialize() {
 	_damageAnim.reset(new MoveAnim(ONE_SEC/4, Vector3(0, 20, 0), RELATIVE));
 	_damageAnim->onEnd = [this](_Entity* e){ _entities.destroyEntity(EntityRef(e)); };
 
+	_deathAnim.reset(new Sequence);
+	for(unsigned i = 0; i < 4; ++i) {
+		_deathAnim->anims.push_back(new SpriteColorAnim(ONE_SEC / 10, Vector4(1, 1, 1, 1)));
+		_deathAnim->anims.push_back(new SpriteColorAnim(ONE_SEC / 10, Vector4(1, 1, 1, 0)));
+	}
+
 
 	_statusFrame.reset(new Frame(&_menuBgSprite, Vector2(640, 120)));
 	_statusFrame->position = Vector3(0, 0, -.05);
@@ -277,6 +283,7 @@ EntityRef MainState::createSprite(Sprite* sprite, const Vector3& pos,
 	_sprites.addComponent(entity);
 	entity.sprite()->setSprite(sprite);
 	entity.setTransform(Translation(pos) * Eigen::Scaling(scale.x(), scale.y(), 1.f));
+	_anims.addComponent(entity);
 	return entity;
 }
 
@@ -408,6 +415,7 @@ void MainState::updateFrame() {
 		if(_menuInputs.ok->justPressed()
 		|| _menuInputs.cancel->justPressed()) {
 			createDamageText("!!! TEST !!!", Vector3(200, 200, .999), Vector4(1, .5, 0, 1));
+			_anims.get(_pc[0])->play(_deathAnim->clone());
 			nextMessage();
 		}
 	} else if(!_menuStack.empty()) {

@@ -166,8 +166,10 @@ protected:
 	Sprite      _boss1Sprite;
 	Sprite      _pcSprite[4];
 
-	std::unique_ptr<Animation>
+	std::unique_ptr<MoveAnim>
 	            _damageAnim;
+	std::unique_ptr<Sequence>
+	            _deathAnim;
 
 	EntityRef   _bg;
 
