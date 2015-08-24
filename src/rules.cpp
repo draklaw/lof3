@@ -229,3 +229,155 @@ unsigned Rules::max_mp (PC c)
 {
 	return mp[c.job] * c.xp;
 }
+
+Spell Rules::base_spell (Spell s)
+{
+	switch (s)
+	{
+		case NUKES:
+		case NUKES + FIRE:
+		case NUKES + ICE:
+		case NUKES + SPARK:
+		case NUKES + ACID:
+			return NUKES;
+		case AOES:
+		case AOES + FIRE:
+		case AOES + ICE:
+		case AOES + SPARK:
+		case AOES + ACID:
+			return AOES;
+		case SHIELDS:
+		case SHIELDS + FIRE:
+		case SHIELDS + ICE:
+		case SHIELDS + SPARK:
+		case SHIELDS + ACID:
+			return SHIELDS;
+		default:
+			return s;
+	}
+}
+
+string Rules::name(Curse c, Element e)
+{
+	string adj = "";
+	
+	switch (e)
+	{
+		case NONE:
+			adj = "unholy";
+			break;
+		case FIRE:
+			adj = "fiery";
+			break;
+		case ICE:
+			adj = "frozen";
+			break;
+		case SPARK:
+			adj = "electrifying";
+			break;
+		case ACID:
+			adj = "corrosive";
+			break;
+		default:
+			adj = "frankly unexplainable";
+	}
+	
+	switch (c)
+	{
+		case PUNCH:
+			return adj + " punch";
+		case SWITCH:
+			return "switch";
+		case SCAN:
+			return "scan";
+		case STRIKE:
+			return adj + " curse";
+		case STORM:
+			return adj + " storm";
+		case CRIPPLE:
+			return "crippling blow";
+		case DRAIN:
+			return "soul-draining curse";
+		case MUD:
+			return "flood of mud";
+		case VORPAL:
+			return "lethal strike";
+		case DISPEL:
+			return "magical disjunction";
+		case SUMMON + SPRITES:
+			return "swarm of healing sprites";
+		case SUMMON + TOMBERRY:
+			return "deadly knifeling";
+		case SUMMON + MAGELING:
+			return "mageling minion against your foes";
+		default:
+			return adj + " MISSINGNO";
+	}
+}
+
+string Rules::name(Spell s)
+{
+	string adj = "";
+	
+	switch (Element(s - base_spell(s)))
+	{
+		case NONE:
+			adj = "holy";
+			break;
+		case FIRE:
+			adj = "fire";
+			break;
+		case ICE:
+			adj = "ice";
+			break;
+		case SPARK:
+			adj = "lightning";
+			break;
+		case ACID:
+			adj = "acid";
+			break;
+		default:
+			adj = "a never-seen-before";
+	}
+
+	switch (s)
+	{
+		case AA:
+			return "his weapon";
+		case SMITE:
+			return "mighty force";
+		case PROTECT:
+			return "a protecting shield";
+		case SLICE:
+			return "deep-cut-no-jutsu";
+		case SWIPE:
+			return "thousand-cuts-no-jutsu";
+		case HEAL:
+			return "heal";
+		case NURSE:
+			return "\"summon wave of prancing nurses\"";
+		case REZ:
+			return "resurrection";
+		case NUKES:
+		case NUKES + FIRE:
+		case NUKES + ICE:
+		case NUKES + SPARK:
+		case NUKES + ACID:
+			return adj + " ball";
+		case AOES:
+		case AOES + FIRE:
+		case AOES + ICE:
+		case AOES + SPARK:
+		case AOES + ACID:
+			return adj + " storm";
+		case SHIELDS:
+		case SHIELDS + FIRE:
+		case SHIELDS + ICE:
+		case SHIELDS + SPARK:
+		case SHIELDS + ACID:
+			return adj + " shield";
+		default:
+			return "an unknown but possibly reality-threatening spell";
+	}
+	
+}

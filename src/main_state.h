@@ -141,7 +141,7 @@ protected:
 
 
 
-protected:
+public:
 	Game* _game;
 
 	EntityManager             _entities;

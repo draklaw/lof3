@@ -365,7 +365,7 @@ EntityRef MainState::createHealthBar(const Vector3& pos, float size) {
 void MainState::init() {
 	log().log("Initialize main state.");
 
-	_fight.reset(new Fight(log(), *this, _rules, _player, 150));
+	_fight.reset(new Fight(log(), *this, _rules, _player, 50));
 
 	_damagePos[0] = Vector3(567, _camera.viewBox().max().y() - 120, .5);
 	_damagePos[1] = Vector3(517, _camera.viewBox().max().y() - 120, .5);
