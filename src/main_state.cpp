@@ -199,13 +199,13 @@ void MainState::initialize() {
 	                    openMenuFunc(_pcMenu.get(), _mainMenu.get(), 0));
 	_mainMenu->addEntry("Switch", Menu::ENABLED,
 	                    openMenuFunc(_switchMenu.get(), _mainMenu.get(), 1));
-	_mainMenu->addEntry("Spell", Menu::ENABLED,
+	_mainMenu->addEntry("Curse", Menu::ENABLED,
 	                    openMenuFunc(_spellMenu.get(),  _mainMenu.get(), 2));
-	_mainMenu->addEntry("Summon", Menu::ENABLED,
-	                    openMenuFunc(_summonMenu.get(), _mainMenu.get(), 3));
-	_mainMenu->addEntry("Scan");
-	_mainMenu->addEntry("QTE",     Menu::HIDDEN);
-	_mainMenu->addEntry("Twist 1", Menu::HIDDEN);
+//	_mainMenu->addEntry("Summon", Menu::ENABLED,
+//	                    openMenuFunc(_summonMenu.get(), _mainMenu.get(), 3));
+//	_mainMenu->addEntry("Scan");
+//	_mainMenu->addEntry("QTE",     Menu::HIDDEN);
+//	_mainMenu->addEntry("Twist 1", Menu::HIDDEN);
 	_mainMenu->layout();
 	_mainMenu->show(Vector3(0, 0, 0));
 
