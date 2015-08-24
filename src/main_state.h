@@ -107,6 +107,25 @@ protected:
 		GAME_OVER
 	};
 
+	enum {
+		MAIN_ATTACK,
+		MAIN_SWITCH,
+		MAIN_SPELL,
+		MAIN_SUMMON,
+		MAIN_SCAN,
+		MAIN_QTE,
+
+		SPELL_STORM = 0,
+		SPELL_STRIKE,
+		SPELL_CRIPPLE,
+		SPELL_DRAIN,
+		SPELL_VORPAL,
+		SPELL_MUD,
+		SPELL_DISPEL
+	};
+
+
+
 protected:
 	Game* _game;
 

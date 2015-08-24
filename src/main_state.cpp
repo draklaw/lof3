@@ -478,16 +478,18 @@ void MainState::updateMenu() {
 		_pcMenu->setEnabled(i, _fight.can_haz(PUNCH, i));
 	}
 
-	bool someSwitchable = false;
+	_mainMenu->setEnabled(MAIN_SWITCH, _fight.can_haz(SWITCH));
 	for(unsigned i = 0; i < NB_ELEMS; ++i) {
-		if(_fight.can_haz(SWITCH, i)) {
-			_switchMenu->enableEntry(i);
-			someSwitchable = true;
-		} else {
-			_switchMenu->disableEntry(i);
-		}
+		_switchMenu->setEnabled(i, _fight.can_haz(SWITCH, i));
 	}
-	_mainMenu->setEnabled(1, someSwitchable);
+
+	_spellMenu->setEnabled(SPELL_STORM,   _fight.can_haz(STORM));
+	_spellMenu->setEnabled(SPELL_STRIKE,  _fight.can_haz(STRIKE));
+	_spellMenu->setEnabled(SPELL_CRIPPLE, _fight.can_haz(CRIPPLE));
+	_spellMenu->setEnabled(SPELL_DRAIN,   _fight.can_haz(DRAIN));
+	_spellMenu->setEnabled(SPELL_VORPAL,  _fight.can_haz(VORPAL));
+	_spellMenu->setEnabled(SPELL_MUD,     _fight.can_haz(MUD));
+	_spellMenu->setEnabled(SPELL_DISPEL,  _fight.can_haz(DISPEL));
 }
 
 
@@ -526,56 +528,60 @@ Logger& MainState::log() {
 void MainState::doAction() {
 	lairAssert(!_menuStack.empty());
 	switch(_menuStack[0]->selected()) {
-	case 0: { // attack
+	case MAIN_ATTACK: {
 		lairAssert(_menuStack.size() == 2);
 		_fight.curse(PUNCH, _menuStack.back()->selected());
 		break;
 	}
-	case 1: { // spell
+	case MAIN_SWITCH: {
 		lairAssert(_menuStack.size() == 2);
 		switch(_menuStack[1]->selected()) {
-		case 0:
+		case NONE:
 			_fight.curse(SWITCH, NONE);
 			break;
-		case 1:
+		case FIRE:
 			_fight.curse(SWITCH, FIRE);
 			break;
-		case 2:
+		case ICE:
 			_fight.curse(SWITCH, ICE);
 			break;
-		case 3:
+		case SPARK:
 			_fight.curse(SWITCH, SPARK);
 			break;
-		case 4:
+		case ACID:
 			_fight.curse(SWITCH, ACID);
 			break;
 		}
 		break;
 	}
-	case 2: { // spell
+	case MAIN_SPELL: {
 		lairAssert(_menuStack.size() >= 2);
 		switch(_menuStack[1]->selected()) {
-		case 0:
+		case SPELL_STORM:
 			lairAssert(_menuStack.size() == 2);
 			_fight.curse(STORM, -1);
 			break;
-		case 1:
+		case SPELL_STRIKE:
 			lairAssert(_menuStack.size() == 3);
 			_fight.curse(STRIKE, _menuStack.back()->selected());
 			break;
-		case 2:
+		case SPELL_CRIPPLE:
 			lairAssert(_menuStack.size() == 3);
 			_fight.curse(CRIPPLE, _menuStack.back()->selected());
 			break;
-		case 3:
+		case SPELL_DRAIN:
 			lairAssert(_menuStack.size() == 3);
 			_fight.curse(DRAIN, _menuStack.back()->selected());
 			break;
-		case 4:
+		case SPELL_VORPAL:
+			lairAssert(_menuStack.size() == 3);
+			_fight.curse(VORPAL, _menuStack.back()->selected());
+			break;
+		case SPELL_MUD:
 			lairAssert(_menuStack.size() == 2);
 			_fight.curse(MUD, -1);
 			break;
-		case 5:
+		case SPELL_DISPEL:
 			lairAssert(_menuStack.size() == 3);
 			_fight.curse(DISPEL, _menuStack.back()->selected());
 			break;
