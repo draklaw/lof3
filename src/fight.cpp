@@ -156,7 +156,7 @@ bool Fight::can_haz (Curse curse, Target t)
 		case STORM:
 		case SCAN:
 		case MUD:
-			if (t == -1)
+			if (t == (unsigned) -1)
 				return true;
 			else return false;
 

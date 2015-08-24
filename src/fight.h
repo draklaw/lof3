@@ -37,6 +37,10 @@ using namespace lair;
 typedef unsigned Target;
 
 class Fight {
+private:
+	Logger _logger;
+	Logger& log();
+
 public:
 	// Visible internal data
 	Rules& rules;
@@ -68,9 +72,6 @@ public:
 	void use (Item i, Target t);
 
 private:
-	Logger _logger;
-	Logger& log();
-
 	// Play as one of the PCs.
 	void play_party (Target character);
 
