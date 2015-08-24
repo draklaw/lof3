@@ -88,6 +88,7 @@ public:
 	void nextMessage();
 	void layoutMessage();
 
+	void updateMenu();
 	void openMenu(Menu* menu, Menu* parent = nullptr, unsigned entry = 0);
 	Menu::Callback openMenuFunc(Menu* menu, Menu* parent = nullptr,
 	                            unsigned entry = 0);

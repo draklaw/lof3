@@ -59,6 +59,15 @@ uint8 Menu::entryStatus(unsigned i) const {
 }
 
 
+void Menu::setEnabled(unsigned i, bool enabled) {
+	if(enabled) {
+		enableEntry(i);
+	} else {
+		disableEntry(i);
+	}
+}
+
+
 void Menu::hideEntry(unsigned i) {
 	lairAssert(i < _entries.size());
 	if(_entries[i].status == ENABLED) {

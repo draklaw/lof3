@@ -363,6 +363,8 @@ void MainState::init() {
 	showMessage("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec a diam lectus. Sed sit amet ipsum mauris. Maecenas congue ligula ac quam viverra nec consectetur ante hendrerit. Donec et mollis dolor. Praesent et diam eget libero egestas mattis sit amet vitae augue.");
 	showMessage("Nam tincidunt congue enim, ut porta lorem lacinia consectetur.");
 	showMessage("Donec ut libero sed arcu vehicula ultricies a non tortor. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean ut gravida lorem. Ut turpis felis, pulvinar a semper sed, adipiscing id dolor. Pellentesque auctor nisi id magna consequat sagittis. Curabitur dapibus enim sit amet elit pharetra tincidunt feugiat nisl imperdiet. Ut convallis libero in urna ultrices accumsan. Donec sed odio eros.");
+
+	updateMenu();
 }
 
 
@@ -374,13 +376,7 @@ void MainState::updateTick() {
 			_state = GAME_OVER;
 		} else if(_fight.tick_fight()) {
 			_state = BOSS_TURN;
-			for(unsigned i = 0; i < 4; ++i) {
-				if(_fight.can_haz(PUNCH, i)) {
-					_pcMenu->enableEntry(i);
-				} else {
-					_pcMenu->disableEntry(i);
-				}
-			}
+			updateMenu();
 			openMenu(_mainMenu.get());
 		}
 
@@ -473,6 +469,24 @@ void MainState::layoutMessage() {
 }
 
 
+void MainState::updateMenu() {
+	for(unsigned i = 0; i < 4; ++i) {
+		_pcMenu->setEnabled(i, _fight.can_haz(PUNCH, i));
+	}
+
+	bool someSwitchable = false;
+	for(unsigned i = 0; i < NB_ELEMS; ++i) {
+		if(_fight.can_haz(SWITCH, i)) {
+			_switchMenu->enableEntry(i);
+			someSwitchable = true;
+		} else {
+			_switchMenu->disableEntry(i);
+		}
+	}
+	_mainMenu->setEnabled(1, someSwitchable);
+}
+
+
 void MainState::openMenu(Menu* menu, Menu* parent, unsigned entry) {
 	if(parent) {
 		menu->_frame.position.head<2>() = parent->_frame.position.head<2>()
@@ -509,13 +523,62 @@ void MainState::doAction() {
 	lairAssert(!_menuStack.empty());
 	switch(_menuStack[0]->selected()) {
 	case 0: { // attack
+		lairAssert(_menuStack.size() == 2);
 		_fight.curse(PUNCH, _menuStack.back()->selected());
 		break;
 	}
 	case 1: { // spell
+		lairAssert(_menuStack.size() == 2);
+		switch(_menuStack[1]->selected()) {
+		case 0:
+			_fight.curse(SWITCH, NONE);
+			break;
+		case 1:
+			_fight.curse(SWITCH, FIRE);
+			break;
+		case 2:
+			_fight.curse(SWITCH, ICE);
+			break;
+		case 3:
+			_fight.curse(SWITCH, SPARK);
+			break;
+		case 4:
+			_fight.curse(SWITCH, ACID);
+			break;
+		}
 		break;
 	}
-	case 2: { // summon
+	case 2: { // spell
+		lairAssert(_menuStack.size() >= 2);
+		switch(_menuStack[1]->selected()) {
+		case 0:
+			lairAssert(_menuStack.size() == 2);
+			_fight.curse(STORM, -1);
+			break;
+		case 1:
+			lairAssert(_menuStack.size() == 3);
+			_fight.curse(STRIKE, _menuStack.back()->selected());
+			break;
+		case 2:
+			lairAssert(_menuStack.size() == 3);
+			_fight.curse(CRIPPLE, _menuStack.back()->selected());
+			break;
+		case 3:
+			lairAssert(_menuStack.size() == 3);
+			_fight.curse(DRAIN, _menuStack.back()->selected());
+			break;
+		case 4:
+			lairAssert(_menuStack.size() == 2);
+			_fight.curse(MUD, -1);
+			break;
+		case 5:
+			lairAssert(_menuStack.size() == 3);
+			_fight.curse(DISPEL, _menuStack.back()->selected());
+			break;
+		}
+		break;
+	}
+	case 3: { // summon
 		break;
 	}
 	}

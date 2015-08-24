@@ -62,6 +62,7 @@ public:
 	void setSelected(unsigned index);
 
 	uint8 entryStatus(unsigned i) const;
+	void setEnabled(unsigned i, bool enabled);
 	void hideEntry(unsigned i);
 	void disableEntry(unsigned i);
 	void enableEntry(unsigned i);
