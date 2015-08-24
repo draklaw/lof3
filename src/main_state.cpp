@@ -349,7 +349,7 @@ EntityRef MainState::createHealthBar(const Vector3& pos, float size) {
 void MainState::init() {
 	log().log("Initialize main state.");
 
-	_fight.reset(new Fight(log(), _rules, _player, 150));
+	_fight.reset(new Fight(log(), *this, _rules, _player, 150));
 
 	_bg = _entities.createEntity(_entities.root(), "bg");
 	_sprites.addComponent(_bg);
@@ -428,8 +428,6 @@ void MainState::updateFrame() {
 	if(!_messages.empty()) {
 		if(_menuInputs.ok->justPressed()
 		|| _menuInputs.cancel->justPressed()) {
-			createDamageText("!!! TEST !!!", Vector3(200, 200, .999), Vector4(1, .5, 0, 1));
-			_anims.get(_pc[0])->play(_deathAnim->clone());
 			nextMessage();
 		}
 	} else if(!_menuStack.empty()) {

@@ -20,6 +20,8 @@
 
 #include "fight.h"
 
+#include "main_state.h"
+
 // Dummy target
 #define NOTARGET (Target) -1
 
@@ -36,8 +38,9 @@
 // Subjective HP factor of healers
 #define HEALER_BIAS 0.8
 
-Fight::Fight(Logger& logger, Rules& r, Player& p, unsigned lvl)
+Fight::Fight(Logger& logger, MainState& ms, Rules& r, Player& p, unsigned lvl)
 :	_logger(&logger),
+	_mainState(ms),
 	rules(r),
 	player(p),
 	boss{rules.boss_hp[0], NONE, {0}, {0}, rules.boss_init},

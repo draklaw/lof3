@@ -31,6 +31,8 @@
 using namespace std;
 using namespace lair;
 
+class MainState;
+
 // 0 ... boss_target : target PC
 //    boss_target    : target boss
 // boss_target ... + : target minion
@@ -40,6 +42,8 @@ class Fight {
 private:
 	Logger _logger;
 	Logger& log();
+
+	MainState& _mainState;
 
 public:
 	// Visible internal data
@@ -54,7 +58,7 @@ public:
 	Target boss_target;
 
 	// Engage a fresh fight with player p.
-	Fight(Logger& logger, Rules& r, Player& p, unsigned lvl);
+	Fight(Logger& logger, MainState& ms, Rules& r, Player& p, unsigned lvl);
 	~Fight();
 
 	// Returns true iff the boss has to play now.
