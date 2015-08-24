@@ -178,8 +178,9 @@ bool Fight::game_over ()
 
 double Fight::boss_hp_rate()
 {
-	return double( boss.hp - (tier==NB_TIERS-1) ? 0 : rules.boss_hp[tier+1] )
-	     / rules.boss_hp[tier];
+	unsigned tmin = (tier == NB_TIERS-1) ? 0 : rules.boss_hp[tier+1];
+	unsigned tmax = rules.boss_hp[tier];
+	return double(boss.hp-tmin) / (tmax-tmin);
 }
 
 bool Fight::can_haz (Curse c)
