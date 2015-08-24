@@ -395,14 +395,6 @@ void MainState::init() {
 
 	_game->audio()->playMusic(_music1);
 
-//	EntityRef test = _entities.createEntity(_entities.root(), "test");
-//	_sprites.addComponent(test);
-//	test.sprite()->setSprite(&_menuBgSprite);
-
-	showMessage("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec a diam lectus. Sed sit amet ipsum mauris. Maecenas congue ligula ac quam viverra nec consectetur ante hendrerit. Donec et mollis dolor. Praesent et diam eget libero egestas mattis sit amet vitae augue.");
-	showMessage("Nam tincidunt congue enim, ut porta lorem lacinia consectetur.");
-	showMessage("Donec ut libero sed arcu vehicula ultricies a non tortor. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean ut gravida lorem. Ut turpis felis, pulvinar a semper sed, adipiscing id dolor. Pellentesque auctor nisi id magna consequat sagittis. Curabitur dapibus enim sit amet elit pharetra tincidunt feugiat nisl imperdiet. Ut convallis libero in urna ultrices accumsan. Donec sed odio eros.");
-
 	updateMenu();
 }
 
