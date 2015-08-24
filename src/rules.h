@@ -162,6 +162,7 @@ public:
 	// Human-readable names for things.
 	string name(Curse c, Element e);
 	string name(Spell s);
+	string name(Status s);
 };
 
 #endif
