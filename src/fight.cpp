@@ -30,7 +30,7 @@ Fight::Fight(Logger& logger, Rules& r, Player& p)
 	boss{rules.boss_hp[0], NONE, {0}, {0}, rules.boss_init},
 	tier(0)
 {
-	//log().setLevel(LogLevel::Warning);
+	log().setLevel(LogLevel::Info);
 	log().info("Knife fight : BEGIN !");
 
 	boss_target = rules.party_size;
@@ -64,8 +64,8 @@ Fight::Fight(Logger& logger, Rules& r, Player& p)
 	});
 	party.push_back({
 		NINJA, 11,
-		rules.hd[NINJA] * 12,
-		rules.mp[NINJA] * 12,
+		rules.hd[NINJA] * 11,
+		rules.mp[NINJA] * 11,
 		NULL,
 		{0}, {0}, {0},
 		0,
@@ -267,10 +267,14 @@ void Fight::curse (Curse c, Target t)
 
 void Fight::play (Target user, Spell s, Target t)
 {
+	log().info("User ",user," casts ",s," on ",t,"...");
+
 	// Sanity check.
 	assert (s < NB_SPELLS);
 	assert (user != boss_target);
 	assert (user < boss_target + 1 + horde.size());
+
+	log().info("...sane.");
 
 	//TODO: Trigger spell-specific cooldown.
 	switch (s)
@@ -394,6 +398,9 @@ void Fight::play_party (Target character)
 		if (player.strat[i] != 0)
 			known_strats++;
 
+	log().info("Confidence value : ",confidence,"/",max_confidence,".");
+	log().info("Known strats : ",known_strats,".");
+
 	if (rtd(max_confidence) > confidence)
 	{ // Panic !
 		//TODO: Improvise when panicking.
@@ -403,13 +410,15 @@ void Fight::play_party (Target character)
 		// (- Learn.)
 
 		// Attack the boss.
-		log().info("Player ", c, " says : \"I smite thee, evil one !\"");
+		log().info("Player ", c, " punches the boss in a panic !");
 		play(c, AA, boss_target);
 	}
 	else if (rtd(NB_STRATS) < known_strats)
 	{ // Keep calm and use strategy.
+		log().info("Player ", c, " ponders his options.");
 		if (player.strat[SPELLS] && !party[c].status[SILENCE])
 		{ // I put on my robe and wizard hat.
+			log().info("Player ", c, " acts smart.");
 			switch (party[c].job)
 			{
 				case FIGHTER:
@@ -455,8 +464,8 @@ void Fight::play_party (Target character)
 					if (nbt > AOE_THRESHOLD
 					 && can_do(c, AOES + (e = pick_elem(NOTARGET)), NOTARGET))
 						play (c, AOES + e, NOTARGET);
-					else if (can_do(c, AOES + (e = pick_elem(NOTARGET)), t))
-						play (c, AOES + e, t);
+					else if (can_do(c, NUKES + (e = pick_elem(t)), t))
+						play (c, NUKES + e, t);
 					else
 						play (c, AA, t);
 					break;
@@ -475,14 +484,14 @@ void Fight::play_party (Target character)
 		// - Substract each favor in turn, and pick whatever reaches zero.
 
 		// Attack the boss.
-		log().info("Player ", c, " says : \"I smite thee, evil one !\"");
+		log().info("Player ", c, " enjoys punching the bad guy.");
 		play(c, AA, boss_target);
 	}
 }
 
 bool Fight::can_do (Target user, Spell s, Target t)
 {
-	log().log(user,s,t);
+log().log("Assuming ",user," can do ",s," on ",t,".");
 	//TODO: Check mana.
 	//TODO: Check cooldown.
 	//TODO: Check silence.
@@ -499,12 +508,14 @@ unsigned Fight::count_strategic_targets ()
 		 || (player.strat[KILL_TOMBERRY] && horde[i].spawn == TOMBERRY))
 			c++;
 
+	log().info("Counted ", c, " strategic targets.");
 	return c;
 }
 
 Target Fight::pick_target()
 {
 	//TODO: KILL_SPRITES, KILL_TOMBERRY, DPS_RUN or random
+	log().info("Targeting... boss.");
 	return boss_target;
 }
 
@@ -519,6 +530,7 @@ unsigned Fight::count_weak_targets ()
 		if (party[i].hp < rules.max_hp(party[i]) / 2 )
 			wc++;
 
+	log().info("Counted ", wc, " weaklings.");
 	return wc;
 }
 
@@ -541,12 +553,13 @@ Target Fight::find_weak ()
 	else
 		w = rtd(rules.party_size);
 
+	log().info("Chose ", w, " as my weakling.");
 	return w;
 }
 
 Element Fight::pick_elem (Target t)
 {
-	log().log(t);
+	log().info("Picking random element against ", t, ".");
 	//TODO: AoE
 	//TODO: AVOID_ELEM, PICK_ELEM
 	return Element(rtd(NB_ELEMS));
@@ -554,6 +567,7 @@ Element Fight::pick_elem (Target t)
 
 unsigned Fight::rtd ()
 {
+	log().info("!rtd");
 	return (Element) rtd(100);
 }
 
@@ -565,6 +579,7 @@ unsigned Fight::rtd (unsigned max)
 
 void Fight::damage (Target t, unsigned amount, Element e)
 {
+	log().info("Damaging ",t," for ",amount," of type ", e,".");
 	unsigned dmg = amount;
 	// PC target
 	if (t < boss_target)
@@ -613,6 +628,7 @@ void Fight::damage (Target t, unsigned amount, Element e)
 
 void Fight::control (Target t, Status s)
 {
+	log().info("Status ",s," inflicted on ",t,".");
 	//TODO: Implement tenacity.
 	party[t].status[s] = true;
 }
