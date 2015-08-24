@@ -136,11 +136,14 @@ void MainState::initialize() {
 	_healthEmptySprite = loadSprite("health_bar_empty.png");
 	_healthFullSprite  = loadSprite("health_bar_full.png");
 	_menuBgSprite      = loadSprite("menu.png", 3, 3);
-	_boss1Sprite       = loadSprite("BigBoss1.png");
+	_bossSprite[0]     = loadSprite("BigBoss1.png");
+	_bossSprite[1]     = loadSprite("BigBoss2.png");
+	_bossSprite[2]     = loadSprite("BigBoss3.png");
 	_pcSprite[0]       = loadSprite("GTP.png");
 	_pcSprite[1]       = loadSprite("MN.png");
 	_pcSprite[2]       = loadSprite("MB.png");
 	_pcSprite[3]       = loadSprite("Ninja.png");
+	_tombSprite        = loadSprite("tomb.png");
 
 	_music1      = _game->audio()->loadMusic((_game->dataPath() / "music1.ogg").c_str());
 	_music2      = _game->audio()->loadMusic((_game->dataPath() / "music2.ogg").c_str());
@@ -148,14 +151,20 @@ void MainState::initialize() {
 	_transition1 = _game->audio()->loadMusic((_game->dataPath() / "transition1.ogg").c_str());
 	_transition2 = _game->audio()->loadMusic((_game->dataPath() / "transition2.ogg").c_str());
 
-	_damageAnim.reset(new MoveAnim(ONE_SEC/4, Vector3(0, 20, 0), RELATIVE));
+	_damageAnim.reset(new MoveAnim(ONE_SEC/2, Vector3(0, 30, 0), RELATIVE));
 	_damageAnim->onEnd = [this](_Entity* e){ _entities.destroyEntity(EntityRef(e)); };
 
-	_deathAnim.reset(new Sequence);
-	for(unsigned i = 0; i < 4; ++i) {
-		_deathAnim->anims.push_back(new SpriteColorAnim(ONE_SEC / 10, Vector4(1, 1, 1, 1)));
-		_deathAnim->anims.push_back(new SpriteColorAnim(ONE_SEC / 10, Vector4(1, 1, 1, 0)));
-	}
+	_deathAnim.reset(new SwapSpriteAnim(ONE_SEC/10, &_tombSprite, 9));
+
+	_boss0to1Anim.reset(new Sequence);
+	_boss0to1Anim->anims.push_back(new MoveAnim(ONE_SEC, Vector3(-300, 0, 0), RELATIVE));
+	_boss0to1Anim->anims.push_back(new MoveAnim(ONE_SEC, Vector3(+300, 0, 0), RELATIVE));
+	_boss0to1Anim->anims[0]->onEnd = [this](_Entity* e){ e->sprite->setSprite(&_bossSprite[1]); };
+
+	_boss1to2Anim.reset(new Sequence);
+	_boss1to2Anim->anims.push_back(new MoveAnim(ONE_SEC, Vector3(-300, 0, 0), RELATIVE));
+	_boss1to2Anim->anims.push_back(new MoveAnim(ONE_SEC, Vector3(+280, 0, 0), RELATIVE));
+	_boss1to2Anim->anims[0]->onEnd = [this](_Entity* e){ e->sprite->setSprite(&_bossSprite[2]); };
 
 
 	_statusFrame.reset(new Frame(&_menuBgSprite, Vector2(640, 120)));
@@ -357,15 +366,27 @@ void MainState::init() {
 
 	_fight.reset(new Fight(log(), *this, _rules, _player, 150));
 
+	_damagePos[0] = Vector3(567, _camera.viewBox().max().y() - 120, .5);
+	_damagePos[1] = Vector3(517, _camera.viewBox().max().y() - 120, .5);
+	_damagePos[2] = Vector3(470, _camera.viewBox().max().y() -  92, .5);
+	_damagePos[3] = Vector3(417, _camera.viewBox().max().y() -  78, .5);
+	_damagePos[4] = Vector3(120, _camera.viewBox().max().y() -  70, .5);
+
 	_bg = _entities.createEntity(_entities.root(), "bg");
 	_sprites.addComponent(_bg);
 	_bg.sprite()->setSprite(&_bgSprite);
 	_bg.place(Transform(Translation(Vector3(0, _camera.viewBox().max().y() - 480, -.99))));
 
 
-	_boss = createSprite(&_boss1Sprite,
+	_boss = createSprite(&_bossSprite[0],
 	                     Vector3(240, _camera.viewBox().max().y() - 240, -.815),
 	                     Vector2(-1, 1), "Boss");
+//	_boss = createSprite(&_bossSprite[1],
+//	                     Vector3(240, _camera.viewBox().max().y() - 240, -.815),
+//	                     Vector2(-1, 1), "Boss");
+//	_boss = createSprite(&_bossSprite[2],
+//	                     Vector3(220, _camera.viewBox().max().y() - 240, -.815),
+//	                     Vector2(-1, 1), "Boss");
 
 	Vector3 bhpPos(10, _camera.viewBox().max().y() - 22, 0);
 	Vector3 bhpOffset(0, -22, 0);
@@ -425,6 +446,11 @@ void MainState::updateTick() {
 
 void MainState::updateFrame() {
 	_inputs.sync();
+
+	if(_menuInputs.cancel->justPressed()) {
+		// Debug stuff here...
+	}
+
 	if(!_messages.empty()) {
 		if(_menuInputs.ok->justPressed()
 		|| _menuInputs.cancel->justPressed()) {
@@ -502,6 +528,26 @@ void MainState::layoutMessage() {
 	_messageFrame->position.y() = _camera.viewBox().max().y() - 8 - _messageFrame->size.y();
 	_messageTextHeight = _camera.viewBox().max().y() - _messageOutMargin
 	        - _messageMargin - _font->baselineToTop;
+}
+
+
+void MainState::displayDamages(unsigned target, unsigned damages) {
+	lairAssert(target < 5);
+	createDamageText(std::to_string(damages), _damagePos[target],
+	                 Vector4(1., .2, .0, 1));
+}
+
+
+void MainState::playDeathAnim(unsigned target) {
+	lairAssert(target < 5);
+	EntityRef e = (target < 4)? _pc[target]: _boss;
+	_anims.get(e)->play(new SwapSpriteAnim(ONE_SEC/10, &_tombSprite, 9));
+}
+
+
+void MainState::playRezAnim(unsigned target) {
+	lairAssert(target < 4);
+	_anims.get(_pc[target])->play(new SwapSpriteAnim(ONE_SEC/10, &_pcSprite[target], 9));
 }
 
 

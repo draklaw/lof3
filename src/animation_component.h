@@ -32,6 +32,10 @@
 
 using namespace lair;
 
+namespace lair {
+class Sprite;
+}
+
 
 enum AnimType {
 	ABSOLUTE,
@@ -69,7 +73,7 @@ struct Sequence : public Animation {
 	virtual void updateLength();
 	virtual void begin(_Entity* entity);
 	virtual void update(uint64 time, _Entity* entity);
-//	virtual void end(_Entity* entity);
+	virtual void end(_Entity* entity);
 
 	AnimationList anims;
 	uint64 baseTime;
@@ -118,6 +122,21 @@ struct SpriteColorAnim : public Animation {
 
 	Vector4  from;
 	Vector4  to;
+};
+
+
+struct SwapSpriteAnim : public Animation {
+	SwapSpriteAnim(uint64 cycleLen, Sprite* sprite, unsigned nSwap);
+	virtual ~SwapSpriteAnim() = default;
+	virtual Animation* clone();
+
+	virtual void begin(_Entity* entity);
+	virtual void update(uint64 time, _Entity* entity);
+	virtual void end(_Entity* entity);
+
+	Sprite* sprite;
+	Sprite* sourceSprite;
+	unsigned nSwap;
 };
 
 

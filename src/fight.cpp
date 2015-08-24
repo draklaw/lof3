@@ -585,11 +585,14 @@ void Fight::damage (Target t, unsigned amount, Element e)
 {
 	log().info("Damaging ",t," for ",amount," of type ", e,".");
 	unsigned dmg = amount;
+
 	// PC target
 	if (t < boss_target)
 	{
 		dmg *= rules.elem_factor(e, NONE);
 		unsigned& hp = party[t].hp;
+
+		_mainState.displayDamages(t, amount);
 
 		//TODO: Implement protectors.
 		if (hp > dmg)
@@ -605,6 +608,8 @@ void Fight::damage (Target t, unsigned amount, Element e)
 	{
 		Boss& b = boss;
 		dmg *= rules.elem_factor(e, b.elem);
+
+		_mainState.displayDamages(t, amount);
 
 		if (b.hp > dmg)
 			b.hp -= dmg;

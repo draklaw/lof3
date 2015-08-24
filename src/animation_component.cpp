@@ -49,7 +49,7 @@ void Animation::end(_Entity* entity) {
 
 
 Sequence::Sequence()
-    : pos(anims.begin()) {
+    : pos(anims.end()) {
 }
 
 
@@ -95,7 +95,7 @@ void Sequence::begin(_Entity* entity) {
 
 void Sequence::update(uint64 time, _Entity* entity) {
 	uint64 subTime = time - baseTime;
-	while(pos != anims.end() && subTime > (*pos)->length) {
+	while(pos != anims.end() && subTime >= (*pos)->length) {
 		(*pos)->end(entity);
 		subTime -= (*pos)->length;
 		++pos;
@@ -103,10 +103,16 @@ void Sequence::update(uint64 time, _Entity* entity) {
 			(*pos)->begin(entity);
 		}
 	}
-	if(pos != anims.end()) {
+	if(pos < anims.end()) {
 		(*pos)->update(subTime, entity);
 	}
 	baseTime = time - subTime;
+}
+
+
+void Sequence::end(_Entity* entity) {
+	update(length + 1, entity);
+	Animation::end(entity);
 }
 
 
@@ -244,6 +250,43 @@ void SpriteColorAnim::update(uint64 time, _Entity* entity) {
 void SpriteColorAnim::end(_Entity* entity) {
 	entity->sprite->setColor(to);
 	Animation::end(entity);
+}
+
+
+//---------------------------------------------------------------------------//
+
+
+SwapSpriteAnim::SwapSpriteAnim(uint64 cycleLen, Sprite* sprite, unsigned nSwap)
+    : sprite(sprite),
+      sourceSprite(nullptr),
+      nSwap(nSwap) {
+	length = cycleLen * nSwap;
+}
+
+
+Animation* SwapSpriteAnim::clone() {
+	SwapSpriteAnim* anim = new SwapSpriteAnim(length / nSwap, sprite, nSwap);
+	anim->onBegin = onBegin;
+	anim->onEnd = onEnd;
+	anim->sourceSprite = sourceSprite;
+	return anim;
+}
+
+
+void SwapSpriteAnim::begin(_Entity* entity) {
+	Animation::begin(entity);
+	sourceSprite = entity->sprite->sprite();
+}
+
+
+void SwapSpriteAnim::update(uint64 time, _Entity* entity) {
+	unsigned swap = time / (length / nSwap);
+	entity->sprite->setSprite((swap%2)? sprite: sourceSprite);
+}
+
+
+void SwapSpriteAnim::end(_Entity* entity) {
+	entity->sprite->setSprite((nSwap%2)? sprite: sourceSprite);
 }
 
 

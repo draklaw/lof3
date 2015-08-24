@@ -90,6 +90,10 @@ public:
 	void nextMessage();
 	void layoutMessage();
 
+	void displayDamages(unsigned target, unsigned damages);
+	void playDeathAnim(unsigned target);
+	void playRezAnim(unsigned target);
+
 	void updateMenu();
 	void openMenu(Menu* menu, Menu* parent = nullptr, unsigned entry = 0);
 	Menu::Callback openMenuFunc(Menu* menu, Menu* parent = nullptr,
@@ -156,6 +160,8 @@ protected:
 
 	MenuInputs  _menuInputs;
 
+	Vector3     _damagePos[5];
+
 	Texture*    _fontTex;
 	Json::Value _fontJson;
 	std::unique_ptr<Font>
@@ -171,13 +177,18 @@ protected:
 	Sprite      _healthEmptySprite;
 	Sprite      _healthFullSprite;
 	Sprite      _menuBgSprite;
-	Sprite      _boss1Sprite;
+	Sprite      _bossSprite[3];
 	Sprite      _pcSprite[4];
+	Sprite      _tombSprite;
 
 	std::unique_ptr<MoveAnim>
 	            _damageAnim;
-	std::unique_ptr<Sequence>
+	std::unique_ptr<SwapSpriteAnim>
 	            _deathAnim;
+	std::unique_ptr<Sequence>
+	            _boss0to1Anim;
+	std::unique_ptr<Sequence>
+	            _boss1to2Anim;
 
 	EntityRef   _bg;
 
