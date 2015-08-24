@@ -187,13 +187,61 @@ void Fight::curse (Curse c, Target t)
 {
 	// Sanity check.
 	assert (can_haz(c, t));
-	
+	unsigned drain;
+	Spawn s;
+
 	switch (c)
 	{
 		case PUNCH:
 			damage(t, rules.curse_power[c], boss.elem);
 			break;
-
+		case SWITCH:
+			boss.elem = Element(t);
+			break;
+		case SCAN:
+			//TODO: Display party stats.
+			break;
+		case STORM:
+			for (unsigned i = 0 ; i < rules.party_size ; i++)
+				damage(i, rules.curse_power[c], boss.elem);
+			break;
+		case STRIKE:
+			damage(t, rules.curse_power[c], boss.elem);
+			break;
+		case VORPAL:
+			damage(t, rules.curse_power[c], NONE);
+			if ((unsigned) rand()%100 < rules.curse_utility[c])
+				damage(t, (unsigned) -1, NONE);
+			break;
+		case CRIPPLE:
+			damage(t, rules.curse_power[c], NONE);
+			if ((unsigned) rand()%100 < rules.curse_utility[c])
+				control(t, DISABLE);
+			break;
+		case DRAIN:
+			drain = rules.curse_power[c];
+			if(party[t].mp > drain)
+				party[t].mp -= drain;
+			else
+				party[t].mp = 0;
+			if ((unsigned) rand()%100 < rules.curse_utility[c])
+				control(t, SILENCE);
+			break;
+		case MUD:
+			for (unsigned i = 0 ; i < rules.party_size ; i++)
+				control(i, SLOW);
+			break;
+		case DISPEL:
+			//TODO: Set resistance at what the party[t].equip provides.
+			for (unsigned elem = 0 ; elem < NB_ELEMS ; elem++)
+				party[t].resist[Element(elem)] = 0;
+			break;
+		case SUMMON+SPRITES:
+		case SUMMON+MAGELING:
+		case SUMMON+TOMBERRY:
+			s = Spawn(c - SUMMON);
+			horde.push_back({s,rules.minion_hp[s],boss.elem,rules.minion_init[s]});
+			break;
 		// Unimplemented.
 		default://TODO
 			log().info("I'm sorry, Dave. I'm afraid I can't do that.");
@@ -207,13 +255,72 @@ void Fight::play (Target user, Spell s, Target t)
 	assert (user != boss_target);
 	assert (user < boss_target + 1 + horde.size());
 
+	//TODO: Trigger spell-specific cooldown.
 	switch (s)
 	{
 		case AA:
 			//TODO: Add elemental damage for enchanted weapons.
 			damage(boss_target, rules.spell_power[s], NONE);
 			break;
-
+		case SMITE:
+		case SLICE:
+			damage(boss_target, rules.spell_power[s], NONE);
+			break;
+		case PROTECT:
+			party[t].protector = user;
+			break;
+		case SWIPE:
+			damage(boss_target, rules.spell_power[s], NONE);
+			for (unsigned i = 0 ; i < horde.size() ; i++)
+				damage(boss_target + i, rules.spell_power[s], NONE);
+			break;
+		case HEAL:
+			//TODO: Heal bad guys, if somehow targeted.
+			if (t < boss_target)
+			{
+				party[t].hp += rules.spell_power[s];
+				//TODO: Forbid overhealing.
+				//party[t].hp = max(party[t].hp, rules.max_hp(party[t]));
+			}
+			break;
+		case NURSE:
+			for (unsigned i = 0 ; i < rules.party_size ; i++)
+			{
+				party[i].hp += rules.spell_power[s];
+				//TODO: Forbid overhealing.
+				//party[i].hp = max(party[i].hp, rules.max_hp(party[i]));
+			}
+			break;
+		case REZ:
+			if (party[t].hp == 0)
+				party[t].hp = 50;
+				//FIXME: party[i].hp = rules.max_hp(party[i]) / 4;
+			break;
+		case NUKES:
+		case NUKES + FIRE:
+		case NUKES + ICE:
+		case NUKES + SPARK:
+		case NUKES + ACID:
+			damage(t, rules.spell_power[s], Element(s-NUKES));
+			break;
+		case AOES:
+		case AOES + FIRE:
+		case AOES + ICE:
+		case AOES + SPARK:
+		case AOES + ACID:
+			damage(boss_target, rules.spell_power[s], Element(s-AOES));
+			for (unsigned i = 0 ; i < horde.size() ; i++)
+				damage(boss_target + i, rules.spell_power[s], Element(s-AOES));
+			break;
+		case SHIELDS:
+		case SHIELDS + FIRE:
+		case SHIELDS + ICE:
+		case SHIELDS + SPARK:
+		case SHIELDS + ACID:
+			//TODO: Increment protection properly iff not currently shielded.
+			if (t < boss_target)
+				party[t].resist[Element(s-SHIELDS)] = rules.spell_power[s];
+			break;
 		// Unimplemented.
 		default://TODO
 			log().info("I cannot obey this command because I'm not a wombat.");
@@ -250,10 +357,12 @@ void Fight::damage (Target t, unsigned amount, Element e)
 		dmg *= rules.elem_factor(e, NONE);
 		unsigned& hp = party[t].hp;
 
+		//TODO: Implement protectors.
 		if (hp > dmg)
 			hp -= dmg;
 		else
 		{
+			//TODO: Implement resilience.
 			hp = 0;
 			//TODO: Kill the PC.
 		}
@@ -285,4 +394,10 @@ void Fight::damage (Target t, unsigned amount, Element e)
 			//TODO: Kill a minion.
 		}
 	}
+}
+
+void Fight::control (Target t, Status s)
+{
+	//TODO: Implement tenacity.
+	party[t].status[s] = true;
 }

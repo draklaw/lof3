@@ -77,6 +77,8 @@ private:
 
 	// Inflict amount damage with element e to target t.
 	void damage (Target t, unsigned amount, Element e);
+	// Inflict status s to target t.
+	void control (Target t, Status s);
 };
 
 

@@ -46,20 +46,20 @@ struct Stuff {
 
 enum Job { FIGHTER, HEALER, WIZARD, NINJA, NB_JOBS };
 enum Status { NORMAL, SLOW, DISABLE, SILENCE, NB_STATUS };
-enum Spell { AA, SMITE, SWIPE, PROTECT, HEAL, NURSE, REZ, NUKES,
+enum Spell { AA, SMITE, PROTECT, SLICE, SWIPE, HEAL, NURSE, REZ, NUKES,
 	AOES = NUKES+NB_ELEMS, SHIELDS = AOES+NB_ELEMS, NB_SPELLS = SHIELDS+NB_ELEMS
 };
 struct PC {
-	Job job;                       // Character class^H^H^H^H^Hjob
-	unsigned xp;                   // Level
-	unsigned hp;                   // Health
-	unsigned mp;                   // Mana
-	Stuff* equip;                  // Equipment
-	bool status[NB_STATUS];        // Active debuffs
-	unsigned cooldowns[NB_SPELLS]; // Spell cooldowns
-	unsigned resists[NB_ELEMS];    // Current elemental resistances
-	unsigned protector;            // Protection provider (PARTY_SIZE if none)
-	unsigned init;                 // Time to initiative
+	Job job;                      // Character class^H^H^H^H^Hjob
+	unsigned xp;                  // Level
+	unsigned hp;                  // Health
+	unsigned mp;                  // Mana
+	Stuff* equip;                 // Equipment
+	bool status[NB_STATUS];       // Active debuffs
+	unsigned cooldown[NB_SPELLS]; // Spell cooldowns
+	unsigned resist[NB_ELEMS];    // Current elemental resistances
+	unsigned protector;           // Protection provider (PARTY_SIZE if none)
+	unsigned init;                // Time to initiative
 };
 
 enum Spawn { SPRITES, MAGELING, TOMBERRY, NB_SPAWNS };
@@ -88,12 +88,12 @@ enum Strat { SPELLS, AVOID_ELEM, PICK_ELEM, RAISE_SHIELD, RAISE_DEAD,
 	PROTECT_WEAK, DPS_RUN, NB_STRATS
 };
 struct Player {
-	unsigned inventory[NB_ITEMS];     // Party inventory
-	unsigned practice[NB_QTES];       // QTE "skill"
-	unsigned strats[NB_STRATS];       // Strats knowledge
-	unsigned aa_favor;                // Fondness for auto-attacks
-	unsigned spell_favors[NB_SPELLS]; // Favorite spells
-	unsigned item_favors[NB_ITEMS];   // Favorite consumables
+	unsigned inventory[NB_ITEMS];    // Party inventory
+	unsigned practice[NB_QTES];      // QTE "skill"
+	unsigned strats[NB_STRATS];      // Strats knowledge
+	unsigned aa_favor;               // Fondness for auto-attacks
+	unsigned spell_favor[NB_SPELLS]; // Favorite spells
+	unsigned item_favor[NB_ITEMS];   // Favorite consumables
 };
 
 class Rules {
@@ -128,8 +128,8 @@ public:
 
 	// Misc stats
 	double elem_multiplier[3]; // Base, efficient and inefficient results.
-	unsigned max_summons;       // Maximum number of concurrent minions.
-	unsigned party_size;        // 4.
+	unsigned max_summons;      // Maximum number of concurrent minions.
+	unsigned party_size;       // 4.
 
 	Rules(Logger& logger, const string& rules_source);
 	~Rules();
