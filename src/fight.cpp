@@ -535,8 +535,10 @@ void Fight::play (Target user, Spell s, Target t)
 			}
 			break;
 		case REZ:
-			if (party[t].hp == 0)
+			if (party[t].hp == 0) {
 				party[t].hp = rules.max_hp(party[t]) / 4;
+				_mainState.playRezAnim(t);
+			}
 			break;
 		case NUKES:
 		case NUKES + FIRE:
@@ -684,7 +686,7 @@ void Fight::damage (Target t, unsigned amount, Element e)
 		{
 			//TODO: Implement resilience.
 			hp = 0;
-			_mainState._anims.get(_mainState._pc[t])->anim = _mainState._deathAnim->clone();
+			_mainState.playDeathAnim(t);
 		}
 	}
 	else if (t == boss_target)
@@ -699,7 +701,7 @@ void Fight::damage (Target t, unsigned amount, Element e)
 		else
 		{
 			b.hp = 0;
-			_mainState._anims.get(_mainState._boss)->anim = _mainState._deathAnim->clone();
+			_mainState.playDeathAnim(t);
 			//TODO: Kill his minions.
 		}
 	}

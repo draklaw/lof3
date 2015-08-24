@@ -67,6 +67,8 @@ public:
 	void disableEntry(unsigned i);
 	void enableEntry(unsigned i);
 
+	void setLabel(unsigned i, const std::string& label);
+
 	unsigned width() const;
 	unsigned height() const;
 

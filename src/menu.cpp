@@ -104,6 +104,11 @@ void Menu::enableEntry(unsigned i) {
 }
 
 
+void Menu::setLabel(unsigned i, const std::string& label) {
+	_entries[i].label = label;
+}
+
+
 unsigned Menu::width() const {
 	return _frame.size.x();
 }

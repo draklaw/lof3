@@ -71,8 +71,6 @@ MainState::MainState(Game* game)
 
       _bg(),
 
-      _pcName{ "Warrior", "Black mage", "White mage", "Ninja" },
-
       _messages(),
       _messageFrame(),
       _messageMargin(0),
@@ -141,8 +139,8 @@ void MainState::initialize() {
 	_bossSprite[1]     = loadSprite("BigBoss2.png");
 	_bossSprite[2]     = loadSprite("BigBoss3.png");
 	_pcSprite[0]       = loadSprite("GTP.png");
-	_pcSprite[1]       = loadSprite("MN.png");
-	_pcSprite[2]       = loadSprite("MB.png");
+	_pcSprite[1]       = loadSprite("MB.png");
+	_pcSprite[2]       = loadSprite("MN.png");
 	_pcSprite[3]       = loadSprite("Ninja.png");
 	_tombSprite        = loadSprite("tomb.png");
 
@@ -230,10 +228,10 @@ void MainState::initialize() {
 	_summonMenu->layout();
 	_summonMenu->show(Vector3(_mainMenu->width(), 16, .1));
 
-	_pcMenu->addEntry(_pcName[0], Menu::ENABLED, doActionFunc());
-	_pcMenu->addEntry(_pcName[1], Menu::ENABLED, doActionFunc());
-	_pcMenu->addEntry(_pcName[2], Menu::ENABLED, doActionFunc());
-	_pcMenu->addEntry(_pcName[3], Menu::ENABLED, doActionFunc());
+	_pcMenu->addEntry("", Menu::ENABLED, doActionFunc());
+	_pcMenu->addEntry("", Menu::ENABLED, doActionFunc());
+	_pcMenu->addEntry("", Menu::ENABLED, doActionFunc());
+	_pcMenu->addEntry("", Menu::ENABLED, doActionFunc());
 	_pcMenu->layout();
 	_pcMenu->show(Vector3(_mainMenu->width(), 16, .2));
 
@@ -399,8 +397,10 @@ void MainState::init() {
 	                   _camera.viewBox().max().y() - 240, -.8);
 	Vector3 offset(-50, 14, -.01);
 
-	Vector3 namePos(250, 94, -0.01);
-	Vector3 nameOffset(0, -24, 0);
+//	Vector3 namePos(250, 94, -0.01);
+	Vector3 namePos(250, 22, -0.01);
+//	Vector3 nameOffset(0, -24, 0);
+	Vector3 nameOffset(0, 24, 0);
 	Vector3 statusPos = namePos + Vector3(110, -4, 0);
 	Vector3 statusOffset(16, 0, 0);
 	Vector3 hpPos = namePos + Vector3(160, -8, 0);
@@ -411,23 +411,29 @@ void MainState::init() {
 	}
 	for(unsigned pc = 0; pc < 4; ++pc) {
 		_pc[pc] = createSprite(&_pcSprite[pc], closestPos + pc * offset,
-		                       Vector2(-1, 1), _pcName[pc].c_str());
-		createText(_pcName[pc], namePos + pc * nameOffset);
+		                       Vector2(-1, 1), _fight->party[pc].name.c_str());
+		createText(_fight->party[pc].name, namePos + pc * nameOffset);
+		_pcMenu->setLabel(pc, _fight->party[pc].name);
+
 		_pcStatus[pc*NB_REAL_STATUS + 0] =
 		        createSprite(&_statusSprite, statusPos + pc * nameOffset + 0 * statusOffset);
 		_pcStatus[pc*NB_REAL_STATUS + 0].sprite()->setIndex(0);
 		_pcStatus[pc*NB_REAL_STATUS + 0].sprite()->setColor(Vector4(1, 1, 1, 0));
+
 		_pcStatus[pc*NB_REAL_STATUS + 1] =
 		        createSprite(&_statusSprite, statusPos + pc * nameOffset + 1 * statusOffset);
 		_pcStatus[pc*NB_REAL_STATUS + 1].sprite()->setIndex(1);
 		_pcStatus[pc*NB_REAL_STATUS + 1].sprite()->setColor(Vector4(1, 1, 1, 0));
+
 		_pcStatus[pc*NB_REAL_STATUS + 2] =
 		        createSprite(&_statusSprite, statusPos + pc * nameOffset + 2 * statusOffset);
 		_pcStatus[pc*NB_REAL_STATUS + 2].sprite()->setIndex(2);
 		_pcStatus[pc*NB_REAL_STATUS + 2].sprite()->setColor(Vector4(1, 1, 1, 0));
+
 		_pcHealthFull[pc] = createHealthBar(hpPos + pc * nameOffset,
 		                                    float(_fight->party[pc].hp) / _maxPcHp);
 	}
+	_pcMenu->layout();
 
 	_game->audio()->playMusic(_music1);
 

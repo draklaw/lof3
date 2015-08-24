@@ -208,7 +208,6 @@ public:
 	EntityRef   _pc[4];
 	EntityRef   _pcStatus[4 * NB_REAL_STATUS];
 	EntityRef   _pcHealthFull[4];
-	std::string _pcName[4];
 
 	std::unique_ptr<Frame>
 	            _statusFrame;
