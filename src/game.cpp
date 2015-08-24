@@ -42,6 +42,8 @@ Game::Game()
       _renderModule(nullptr),
       _renderer(nullptr),
 
+      _audio(nullptr),
+
       _nextState(nullptr),
       _currentState(nullptr),
 
@@ -93,6 +95,11 @@ Renderer* Game::renderer() {
 }
 
 
+SoundPlayer* Game::audio() {
+	return _audio.get();
+}
+
+
 void Game::initialize() {
 	_sys.reset(new SysModule(&_mlogger, DEFAULT_LOG_LEVEL));
 	_sys->initialize();
@@ -108,6 +115,8 @@ void Game::initialize() {
 	_renderModule.reset(new RenderModule(sys(), &_mlogger, DEFAULT_LOG_LEVEL));
 	_renderModule->initialize();
 	_renderer = _renderModule->createRenderer();
+
+	_audio.reset(new SoundPlayer(this));
 
 	_mainState.reset(new MainState(this));
 	_mainState->initialize();

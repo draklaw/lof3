@@ -33,6 +33,7 @@
 #include <lair/render_gl2/render_module.h>
 #include <lair/render_gl2/renderer.h>
 
+#include "sound_player.h"
 #include "main_state.h"
 
 #include "game_state.h"
@@ -53,6 +54,8 @@ public:
 
 	RenderModule* renderModule();
 	Renderer*     renderer();
+
+	SoundPlayer*  audio();
 
 	void initialize();
 	void shutdown();
@@ -80,6 +83,9 @@ protected:
 	std::unique_ptr<RenderModule>
 	              _renderModule;
 	Renderer*     _renderer;
+
+	std::unique_ptr<SoundPlayer>
+	              _audio;
 
 	GameState*    _nextState;
 	GameState*    _currentState;

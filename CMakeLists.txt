@@ -51,6 +51,7 @@ add_executable(lof3
 
 	src/text_component.cpp
 	src/animation_component.cpp
+	src/sound_player.cpp
 
 	src/rules.cpp
 	src/fight.cpp
@@ -65,6 +66,7 @@ add_definitions(-D "'DATA_DIR=\"${CMAKE_CURRENT_SOURCE_DIR}/assets\"'")
 target_link_libraries(lof3
 	${LAIR_LIBRARY}
 	SDL2_image
+	SDL2_mixer
 	"${GLEW_LIBRARIES}"
 	"${SDL2_LIBRARY}"
 	"${Boost_LIBRARIES}"
