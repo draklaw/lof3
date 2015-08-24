@@ -76,6 +76,8 @@ public:
 	void curse (Curse c, Target t);
 
 private:
+	unsigned imem;
+
 	// Play as one of the PCs.
 	void play_party (Target character);
 

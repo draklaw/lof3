@@ -84,6 +84,7 @@ public:
 	void init();
 
 	void updateTick();
+	void play();
 	void updateFrame();
 
 	void showMessage(const std::string& message);

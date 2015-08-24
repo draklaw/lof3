@@ -44,7 +44,8 @@ Fight::Fight(Logger& logger, MainState& ms, Rules& r, Player& p, unsigned lvl)
 	rules(r),
 	player(p),
 	boss{rules.boss_hp[0], NONE, {0}, {0}, rules.boss_init},
-	tier(0)
+	tier(0),
+	imem(0)
 {
 	log().setLevel(LogLevel::Info);
 	log().info("Knife fight : BEGIN !");
@@ -102,18 +103,30 @@ bool Fight::tick_fight ()
 {
 	log().info("Clock's ticking ! Status : ", boss.hp, " vs. ", party[0].hp, "/", party[1].hp, "/", party[2].hp, "/", party[3].hp);
 
-	for (unsigned i = 0 ; i < party.size() ; i++)
+	for (unsigned& i = imem ; i < party.size() ; i++)
 	{
 		PC& pc = party[i];
-		if (pc.hp && pc.init-- == 0)
+
+		if (!pc.hp)
+			continue;
+
+		if (pc.init == 0)
 		{
 			for (unsigned s = 0 ; s < NB_SPELLS ; s++)
 				if (pc.cooldown[s] != 0)
 					pc.cooldown[s]--;
 
 			play_party(i);
+
+			pc.init = rules.init[pc.job] + (pc.status[SLOW] ? 1 : 0);
+
+			return false;
 		}
+		else
+			pc.init--;
 	}
+
+	imem = 0;
 
 	if (boss.init-- == 0)
 	{
@@ -130,6 +143,12 @@ bool Fight::tick_fight ()
 		boss.init = rules.boss_init;
 		return true;
 	}
+
+	/* Minion.
+	{
+		Minion& m = horde[user - boss_target - 1];
+		m.init = rules.minion_init[m.spawn];
+	}*/
 
 	return false;
 }
@@ -589,18 +608,6 @@ void Fight::play (Target user, Spell s, Target t)
 		// Unimplemented.
 		default://TODO
 			log().info("I cannot obey this command because I'm not a wombat.");
-	}
-
-	// User is a PC.
-	if (user < boss_target)
-	{
-		PC& pc = party[user];
-		pc.init = rules.init[pc.job];
-	}
-	else // User is a minion.
-	{
-		Minion& m = horde[user - boss_target - 1];
-		m.init = rules.minion_init[m.spawn];
 	}
 }
 

@@ -400,8 +400,11 @@ void MainState::init() {
 
 
 void MainState::updateTick() {
-	if(_state == PLAYING
-	&& (_loop.tickCount() % 30) == 0) { // 2 turns per second
+}
+
+
+void MainState::play () {
+	if(_state == PLAYING && _messages.empty()) {
 		log().warning("Turn");
 		if(_fight->game_over()) {
 			_state = GAME_OVER;
@@ -424,6 +427,8 @@ void MainState::updateTick() {
 
 
 void MainState::updateFrame() {
+	play();
+
 	_inputs.sync();
 	if(!_messages.empty()) {
 		if(_menuInputs.ok->justPressed()
