@@ -122,10 +122,12 @@ double Fight::boss_hp_rate()
 	return double(boss.hp) / rules.boss_hp[tier];
 }
 
-bool Fight::can_haz (Curse curse, Target t)
+bool Fight::can_haz (Curse c)
 {
+	//TODO: Cooldown test.
+
 	// Tier test.
-	switch (curse)
+	switch (c)
 	{
 		case VORPAL:
 		case DISPEL:
@@ -144,12 +146,20 @@ bool Fight::can_haz (Curse curse, Target t)
 		case SCAN:
 			break;
 		default:
-			assert(curse < NB_CURSES);
+			assert(c < NB_CURSES);
 			return false;
 	}
 
+	return true;
+}
+
+bool Fight::can_haz (Curse c, Target t)
+{
+	if (!can_haz(c))
+		return false;
+
 	// Target test.
-	switch (curse)
+	switch (c)
 	{
 		// Untargeted spells.
 		case SUMMON + SPRITES:
@@ -354,11 +364,19 @@ void Fight::play_party (Target character)
 	play(c, AA, boss_target);
 
 /* AI decision tree :
-- Assess trouble (1-100)
-> Improvise ()
-> Strategy ()
-> Enjoy
+- Assess trouble (1-100) and roll for panic
+> Improvise (if panicking)
+- list all available actions, pick one
+- list all available targets, pick one
+- do that
+(- learn)
 
+> Strategy (#lost fights x 20% chance)
+
+
+> Enjoy (otherwise)
+-- Sum all possible favors and roll against that
+-- substract each favor in turn, and pick whatever reaches zero
 
 */
 }

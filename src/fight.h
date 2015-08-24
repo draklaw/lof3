@@ -65,7 +65,8 @@ public:
 	// Returns the boss's current HP/max HP for the current tier.
 	double boss_hp_rate();
 
-	// Can curse c be used on target t ?
+	// Can curse c be used (on target t) ?
+	bool can_haz (Curse c);
 	bool can_haz (Curse c, Target t);
 	// As the boss, use curse c on target t.
 	void curse (Curse c, Target t);
