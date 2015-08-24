@@ -62,6 +62,9 @@ public:
 	// Returns true if the fight is over (either side has been wiped out).
 	bool game_over();
 
+	// Returns the boss's current HP/max HP for the current tier.
+	double boss_hp_rate();
+
 	// Can curse c be used on target t ?
 	bool can_haz (Curse c, Target t);
 	// As the boss, use curse c on target t.

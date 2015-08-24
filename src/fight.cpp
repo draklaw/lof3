@@ -117,6 +117,11 @@ bool Fight::game_over ()
 	return !survivors;
 }
 
+double Fight::boss_hp_rate()
+{
+	return boss.hp / rules.boss_hp[tier];
+}
+
 bool Fight::can_haz (Curse curse, Target t)
 {
 	// Tier test.
@@ -190,6 +195,7 @@ void Fight::curse (Curse c, Target t)
 	unsigned drain;
 	Spawn s;
 
+	//TODO: Trigger curse-specific cooldown.
 	switch (c)
 	{
 		case PUNCH:
@@ -346,6 +352,15 @@ void Fight::play_party (Target character)
 	// Attak the boss.
 	log().info("Player ", c, " says : \"I smite thee, evil one !\"");
 	play(c, AA, boss_target);
+
+/* AI decision tree :
+- Assess trouble (1-100)
+> Improvise ()
+> Strategy ()
+> Enjoy
+
+
+*/
 }
 
 void Fight::damage (Target t, unsigned amount, Element e)
