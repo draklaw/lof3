@@ -103,11 +103,17 @@ bool Fight::tick_fight ()
 	log().info("Clock's ticking ! Status : ", boss.hp, " vs. ", party[0].hp, "/", party[1].hp, "/", party[2].hp, "/", party[3].hp);
 
 	for (unsigned i = 0 ; i < party.size() ; i++)
-		if (party[i].init-- == 0)
+		if (party[i].hp && party[i].init-- == 0)
 			play_party(i);
 
 	if (boss.init-- == 0)
 	{
+		if (tier < 2 && boss.hp < rules.boss_hp[tier+1])
+		{
+			string status = (tier == 0) ? "somewhat irritated." : "REALLY PISSED OFF NOW !";
+			tier++;
+			msg("I am... " + status);
+		}
 		boss.init = rules.boss_init;
 		return true;
 	}
@@ -119,7 +125,7 @@ bool Fight::game_over ()
 {
 	if (boss.hp == 0)
 	{
-		log().info("The Overlord has fallen.");
+		msg("The Overlord has fallen...");
 		return true;
 	}
 
@@ -129,7 +135,7 @@ bool Fight::game_over ()
 			survivors = true;
 
 	if (!survivors)
-		log().info("Sadly, no trace of them was ever found.");
+		msg("Sadly, no trace of them was ever found.");
 	return !survivors;
 }
 
@@ -222,11 +228,41 @@ void Fight::curse (Curse c, Target t)
 	unsigned drain;
 	Spawn s;
 
+	Element e = boss.elem;
+
+	if (c == SWITCH)
+		switch (Element(t))
+		{
+			case NONE:
+				msg("You return to your unholy form !");
+				break;
+			case FIRE:
+				msg("You engulf yourself in flames !");
+				break;
+			case ICE:
+				msg("You become a chilling threat !");
+				break;
+			case SPARK:
+				msg("You crackle with tremendous power !");
+				break;
+			case ACID:
+				msg("You start oozing corrosive fluids !");
+				break;
+			default:
+				msg("You become a horrid mess of tentacles ?!");
+		}
+	else if (c == SCAN)
+		msg("Studying the enemy threat...");
+	else if (t == NOTARGET)
+		msg("You unleash a " + rules.name(c,e) + " !");
+	else
+		msg("You inflict a " + rules.name(c,e) + " on " + party[t].name + " !");
+
 	//TODO: Trigger curse-specific cooldown.
 	switch (c)
 	{
 		case PUNCH:
-			damage(t, rules.curse_power[c], boss.elem);
+			damage(t, rules.curse_power[c], e);
 			break;
 		case SWITCH:
 			boss.elem = Element(t);
@@ -236,10 +272,10 @@ void Fight::curse (Curse c, Target t)
 			break;
 		case STORM:
 			for (unsigned i = 0 ; i < rules.party_size ; i++)
-				damage(i, rules.curse_power[c], boss.elem);
+				damage(i, rules.curse_power[c], e);
 			break;
 		case STRIKE:
-			damage(t, rules.curse_power[c], boss.elem);
+			damage(t, rules.curse_power[c], e);
 			break;
 		case VORPAL:
 			damage(t, rules.curse_power[c], NONE);
@@ -274,105 +310,11 @@ void Fight::curse (Curse c, Target t)
 		case SUMMON+MAGELING:
 		case SUMMON+TOMBERRY:
 			s = Spawn(c - SUMMON);
-			horde.push_back({s,rules.minion_hp[s],boss.elem,rules.minion_init[s]});
+			horde.push_back({s,rules.minion_hp[s],e,rules.minion_init[s]});
 			break;
 		// Unimplemented.
 		default://TODO
 			log().info("I'm sorry, Dave. I'm afraid I can't do that.");
-	}
-}
-
-void Fight::play (Target user, Spell s, Target t)
-{
-	// Sanity check.
-	assert (s < NB_SPELLS);
-	assert (user != boss_target);
-	assert (user < boss_target + 1 + horde.size());
-
-	string target_msg = (t == NOTARGET ? "" :
-		(" on " + (t == boss_target ? "you" : party[t].name)));
-	log().error(target_msg);
-	
-	_mainState.showMessage(party[user].name + " casts " + to_string(s) + target_msg + ".");
-
-	//TODO: Trigger spell-specific cooldown.
-	switch (s)
-	{
-		case AA:
-			//TODO: Add elemental damage for enchanted weapons.
-			damage(boss_target, rules.spellpower(s, party[user]), NONE);
-			break;
-		case SMITE:
-		case SLICE:
-			damage(boss_target, rules.spellpower(s, party[user]), NONE);
-			break;
-		case PROTECT:
-			party[t].protector = user;
-			break;
-		case SWIPE:
-			damage(boss_target, rules.spellpower(s, party[user]), NONE);
-			for (unsigned i = 0 ; i < horde.size() ; i++)
-				damage(boss_target + i, rules.spellpower(s, party[user]), NONE);
-			break;
-		case HEAL:
-			//TODO: Heal bad guys, if somehow targeted.
-			if (t < boss_target)
-			{
-				party[t].hp += rules.spellpower(s, party[user]);
-				party[t].hp = min(party[t].hp, rules.max_hp(party[t]));
-			}
-			break;
-		case NURSE:
-			for (unsigned i = 0 ; i < rules.party_size ; i++)
-			{
-				party[i].hp += rules.spellpower(s, party[user]);
-				party[i].hp = min(party[i].hp, rules.max_hp(party[i]));
-			}
-			break;
-		case REZ:
-			if (party[t].hp == 0)
-				party[t].hp = rules.max_hp(party[t]) / 4;
-			break;
-		case NUKES:
-		case NUKES + FIRE:
-		case NUKES + ICE:
-		case NUKES + SPARK:
-		case NUKES + ACID:
-			damage(t, rules.spellpower(s, party[user]), Element(s-NUKES));
-			break;
-		case AOES:
-		case AOES + FIRE:
-		case AOES + ICE:
-		case AOES + SPARK:
-		case AOES + ACID:
-			damage(boss_target, rules.spellpower(s, party[user]), Element(s-AOES));
-			for (unsigned i = 0 ; i < horde.size() ; i++)
-				damage(boss_target + i, rules.spellpower(s, party[user]), Element(s-AOES));
-			break;
-		case SHIELDS:
-		case SHIELDS + FIRE:
-		case SHIELDS + ICE:
-		case SHIELDS + SPARK:
-		case SHIELDS + ACID:
-			//TODO: Increment protection properly iff not currently shielded.
-			if (t < boss_target)
-				party[t].resist[Element(s-SHIELDS)] = rules.spellpower(s, party[user]);
-			break;
-		// Unimplemented.
-		default://TODO
-			log().info("I cannot obey this command because I'm not a wombat.");
-	}
-
-	// User is a PC.
-	if (user < boss_target)
-	{
-		PC& pc = party[user];
-		pc.init = rules.init[pc.job];
-	}
-	else // User is a minion.
-	{
-		Minion& m = horde[user - boss_target - 1];
-		m.init = rules.minion_init[m.spawn];
 	}
 }
 
@@ -497,12 +439,146 @@ void Fight::play_party (Target character)
 
 bool Fight::can_do (Target user, Spell s, Target t)
 {
-log().log("Assuming ",user," can do ",s," on ",t,".");
-	//TODO: Check mana.
-	//TODO: Check cooldown.
-	//TODO: Check silence.
-
+	//TODO: Handle minion users.
+	
+	PC& u = party[user];
+	
+	//TODO: Check user job.
+	
+	// Check status using cute little "safety parentheses" around &&.
+	if ((u.status[SILENCE] && (u.job == HEALER || u.job == WIZARD))
+	 || (u.status[DISABLE] && (u.job == FIGHTER || u.job == NINJA)))
+		return s == AA;
+	
+	// Check mana.
+	if (rules.spell_manacost[s] > u.mp)
+		return false;
+	
+	// Check cooldowns.
+	if (u.cooldown[s])
+		return false;
+	
+	// Check target liveliness.
+	unsigned thp = (unsigned) -1;
+	if (t < boss_target)
+		thp = party[t].hp;
+	else if (t == boss_target)
+		thp = boss.hp;
+	else
+		thp = horde[t - boss_target - 1].hp;
+	
+	if (thp && s == REZ)
+		return false;
+	if (!thp && s != REZ)
+		return false;
+	
 	return true;
+}
+
+void Fight::play (Target user, Spell s, Target t)
+{
+	// Sanity check.
+	assert (s < NB_SPELLS);
+	assert (user != boss_target);
+	assert (user < boss_target + 1 + horde.size());
+
+	string verb_msg = " casts ";
+	string preposition = " on ";
+	if (s == PROTECT)
+	{
+		verb_msg = " lends ";
+		preposition = " to ";
+	}
+	else if (s == AA || s == SMITE || s == SLICE || s == SWIPE)
+	{
+		verb_msg = " strikes with ";
+		preposition = " against ";
+	}
+
+	string target_msg = (t == NOTARGET ? "" :
+		(preposition + (t == boss_target ? "you" : party[t].name)));
+
+	msg(party[user].name + verb_msg + rules.name(s) + target_msg + ".");
+
+	//TODO: Trigger spell-specific cooldown.
+	switch (s)
+	{
+		case AA:
+			//TODO: Add elemental damage for enchanted weapons.
+			damage(boss_target, rules.spellpower(s, party[user]), NONE);
+			break;
+		case SMITE:
+		case SLICE:
+			damage(boss_target, rules.spellpower(s, party[user]), NONE);
+			break;
+		case PROTECT:
+			party[t].protector = user;
+			break;
+		case SWIPE:
+			damage(boss_target, rules.spellpower(s, party[user]), NONE);
+			for (unsigned i = 0 ; i < horde.size() ; i++)
+				damage(boss_target + i, rules.spellpower(s, party[user]), NONE);
+			break;
+		case HEAL:
+			//TODO: Heal bad guys, if somehow targeted.
+			if (t < boss_target)
+			{
+				party[t].hp += rules.spellpower(s, party[user]);
+				party[t].hp = min(party[t].hp, rules.max_hp(party[t]));
+			}
+			break;
+		case NURSE:
+			for (unsigned i = 0 ; i < rules.party_size ; i++)
+			{
+				party[i].hp += rules.spellpower(s, party[user]);
+				party[i].hp = min(party[i].hp, rules.max_hp(party[i]));
+			}
+			break;
+		case REZ:
+			if (party[t].hp == 0)
+				party[t].hp = rules.max_hp(party[t]) / 4;
+			break;
+		case NUKES:
+		case NUKES + FIRE:
+		case NUKES + ICE:
+		case NUKES + SPARK:
+		case NUKES + ACID:
+			damage(t, rules.spellpower(s, party[user]), Element(s-NUKES));
+			break;
+		case AOES:
+		case AOES + FIRE:
+		case AOES + ICE:
+		case AOES + SPARK:
+		case AOES + ACID:
+			damage(boss_target, rules.spellpower(s, party[user]), Element(s-AOES));
+			for (unsigned i = 0 ; i < horde.size() ; i++)
+				damage(boss_target + i, rules.spellpower(s, party[user]), Element(s-AOES));
+			break;
+		case SHIELDS:
+		case SHIELDS + FIRE:
+		case SHIELDS + ICE:
+		case SHIELDS + SPARK:
+		case SHIELDS + ACID:
+			//TODO: Increment protection properly iff not currently shielded.
+			if (t < boss_target)
+				party[t].resist[Element(s-SHIELDS)] = rules.spellpower(s, party[user]);
+			break;
+		// Unimplemented.
+		default://TODO
+			log().info("I cannot obey this command because I'm not a wombat.");
+	}
+
+	// User is a PC.
+	if (user < boss_target)
+	{
+		PC& pc = party[user];
+		pc.init = rules.init[pc.job];
+	}
+	else // User is a minion.
+	{
+		Minion& m = horde[user - boss_target - 1];
+		m.init = rules.minion_init[m.spawn];
+	}
 }
 
 unsigned Fight::count_strategic_targets ()
@@ -581,6 +657,11 @@ unsigned Fight::rtd (unsigned max)
 {
 	//TODO: Improve distribution.
 	return rand() % max;
+}
+
+void Fight::msg (string s)
+{
+	_mainState.showMessage(s);
 }
 
 void Fight::damage (Target t, unsigned amount, Element e)

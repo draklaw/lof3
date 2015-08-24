@@ -45,7 +45,7 @@ struct Stuff {
 };
 
 enum Job { FIGHTER, HEALER, WIZARD, NINJA, NB_JOBS };
-enum Status { NORMAL, SLOW, DISABLE, SILENCE, NB_STATUS };
+enum Status { SLOW, DISABLE, SILENCE, NB_STATUS };
 enum Spell { AA, SMITE, PROTECT, SLICE, SWIPE, HEAL, NURSE, REZ, NUKES,
 	AOES = NUKES+NB_ELEMS, SHIELDS = AOES+NB_ELEMS, NB_SPELLS = SHIELDS+NB_ELEMS
 };
@@ -76,7 +76,7 @@ struct Minion {
 	unsigned init; // Time to initiative
 };
 
-enum Curse { PUNCH, SWITCH, SCAN, STORM, STRIKE, VORPAL, CRIPPLE, DRAIN, MUD,
+enum Curse { PUNCH, SWITCH, SCAN, STRIKE, STORM, VORPAL, CRIPPLE, DRAIN, MUD,
 	DISPEL, SUMMON, NB_CURSES = SUMMON + NB_SPAWNS
 };
 inline constexpr Curse operator+ (Curse c, Spawn s)
@@ -155,6 +155,13 @@ public:
 	// Returns a stat cap for c.
 	unsigned max_hp (PC c);
 	unsigned max_mp (PC c);
+
+	// Returns the non-elemental version of s.
+	Spell base_spell (Spell s);
+
+	// Human-readable names for things.
+	string name(Curse c, Element e);
+	string name(Spell s);
 };
 
 #endif

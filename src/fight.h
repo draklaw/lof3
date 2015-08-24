@@ -99,7 +99,8 @@ private:
 	// Roll the dice !
 	unsigned rtd (unsigned max);
 	unsigned rtd ();
-
+	// Display message on UI.
+	void msg (string s);
 	// Inflict amount damage with element e to target t.
 	void damage (Target t, unsigned amount, Element e);
 	// Inflict status s to target t.
