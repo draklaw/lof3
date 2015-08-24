@@ -62,7 +62,11 @@ public:
 	// Returns true if the fight is over (either side has been wiped out).
 	bool game_over();
 
-	// Can curse c be used on target t ?
+	// Returns the boss's current HP/max HP for the current tier.
+	double boss_hp_rate();
+
+	// Can curse c be used (on target t) ?
+	bool can_haz (Curse c);
 	bool can_haz (Curse c, Target t);
 	// As the boss, use curse c on target t.
 	void curse (Curse c, Target t);
@@ -77,6 +81,8 @@ private:
 
 	// Inflict amount damage with element e to target t.
 	void damage (Target t, unsigned amount, Element e);
+	// Inflict status s to target t.
+	void control (Target t, Status s);
 };
 
 
