@@ -413,7 +413,7 @@ void MainState::init() {
 		_pc[pc] = createSprite(&_pcSprite[pc], closestPos + pc * offset,
 		                       Vector2(-1, 1), _fight->party[pc].name.c_str());
 		createText(_fight->party[pc].name, namePos + pc * nameOffset);
-		_pcMenu->setLabel(pc, _fight->party[pc].name);
+		_pcMenu->setLabel(3 - pc, _fight->party[pc].name);
 
 		_pcStatus[pc*NB_REAL_STATUS + 0] =
 		        createSprite(&_statusSprite, statusPos + pc * nameOffset + 0 * statusOffset);
@@ -637,10 +637,11 @@ Logger& MainState::log() {
 
 void MainState::doAction() {
 	lairAssert(!_menuStack.empty());
+	int target = 3 - _menuStack.back()->selected();
 	switch(_menuStack[0]->selected()) {
 	case MAIN_ATTACK: {
 		lairAssert(_menuStack.size() == 2);
-		_fight->curse(PUNCH, _menuStack.back()->selected());
+		_fight->curse(PUNCH, target);
 		break;
 	}
 	case MAIN_SWITCH: {
@@ -673,19 +674,19 @@ void MainState::doAction() {
 			break;
 		case SPELL_STRIKE:
 			lairAssert(_menuStack.size() == 3);
-			_fight->curse(STRIKE, _menuStack.back()->selected());
+			_fight->curse(STRIKE, target);
 			break;
 		case SPELL_CRIPPLE:
 			lairAssert(_menuStack.size() == 3);
-			_fight->curse(CRIPPLE, _menuStack.back()->selected());
+			_fight->curse(CRIPPLE, target);
 			break;
 		case SPELL_DRAIN:
 			lairAssert(_menuStack.size() == 3);
-			_fight->curse(DRAIN, _menuStack.back()->selected());
+			_fight->curse(DRAIN, target);
 			break;
 		case SPELL_VORPAL:
 			lairAssert(_menuStack.size() == 3);
-			_fight->curse(VORPAL, _menuStack.back()->selected());
+			_fight->curse(VORPAL, target);
 			break;
 		case SPELL_MUD:
 			lairAssert(_menuStack.size() == 2);
@@ -693,7 +694,7 @@ void MainState::doAction() {
 			break;
 		case SPELL_DISPEL:
 			lairAssert(_menuStack.size() == 3);
-			_fight->curse(DISPEL, _menuStack.back()->selected());
+			_fight->curse(DISPEL, target);
 			break;
 		}
 		break;
