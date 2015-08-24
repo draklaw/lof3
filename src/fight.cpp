@@ -387,8 +387,8 @@ void Fight::play_party (Target character)
 		if (player.strat[i] != 0)
 			known_strats++;
 
-	log().info("Confidence value : ",confidence,"/",max_confidence,".");
-	log().info("Known strats : ",known_strats,".");
+	log().debug("Confidence value : ",confidence,"/",max_confidence,".");
+	log().debug("Known strats : ",known_strats,".");
 
 	if (rtd(max_confidence) > confidence)
 	{ // Panic !
@@ -628,7 +628,7 @@ unsigned Fight::count_strategic_targets ()
 		 || (player.strat[KILL_TOMBERRY] && horde[i].spawn == TOMBERRY))
 			c++;
 
-	log().info("Counted ", c, " strategic targets.");
+	log().debug("Counted ", c, " strategic targets.");
 	return c;
 }
 
@@ -648,7 +648,7 @@ unsigned Fight::count_weak_targets ()
 		if (party[i].hp < rules.max_hp(party[i]) / 2 )
 			wc++;
 
-	log().info("Counted ", wc, " weaklings.");
+	log().debug("Counted ", wc, " weaklings.");
 	return wc;
 }
 
@@ -679,10 +679,34 @@ Target Fight::find_weak ()
 
 Element Fight::pick_elem (Target t)
 {
-	log().info("Picking random element against ", t, ".");
+	Element e = Element(rtd(NB_ELEMS));
+
 	//TODO: AoE
-	//TODO: AVOID_ELEM, PICK_ELEM
-	return Element(rtd(NB_ELEMS));
+
+	if (player.strat[AVOID_ELEM])
+		while (e == boss.elem)
+			e = Element(rtd(NB_ELEMS));
+
+	if (player.strat[PICK_ELEM])
+		switch (boss.elem)
+		{
+			case FIRE:
+				e = ICE;
+				break;
+			case ACID:
+				e = SPARK;
+				break;
+			case SPARK:
+				e = ACID;
+				break;
+			case NONE:
+			case ICE:
+			default:
+				e = FIRE;
+		}
+
+	log().info("Picking element ", e, " against ", t, ".");
+	return e;
 }
 
 unsigned Fight::rtd ()
@@ -704,7 +728,7 @@ void Fight::msg (string s)
 
 void Fight::damage (Target t, unsigned amount, Element e)
 {
-	log().info("Damaging ",t," for ",amount," of type ", e,".");
+	log().debug("Damaging ",t," for ",amount," of type ", e,".");
 	unsigned dmg = amount;
 
 	// PC target
@@ -759,7 +783,7 @@ void Fight::damage (Target t, unsigned amount, Element e)
 
 void Fight::control (Target t, Status s)
 {
-	log().info("Status ",s," inflicted on ",t,".");
+	msg("Status ",s," inflicted on ",t,".");
 	//TODO: Implement tenacity.
 	party[t].status[s] = true;
 }
