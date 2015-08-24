@@ -97,7 +97,7 @@ enum Strat { SPELLS, AVOID_ELEM, PICK_ELEM, RAISE_DEAD, HEAL_UP, CLEAR_STATUS,
 struct Player {
 	unsigned inventory[NB_ITEMS];    // Party inventory
 	unsigned practice[NB_QTES];      // QTE "skill"
-	unsigned strat[NB_STRATS];      // Strats knowledge
+	unsigned strat[NB_STRATS];       // Strats knowledge
 	unsigned aa_favor;               // Fondness for auto-attacks
 	unsigned spell_favor[NB_SPELLS]; // Favorite spells
 	unsigned item_favor[NB_ITEMS];   // Favorite consumables

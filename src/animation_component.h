@@ -53,6 +53,8 @@ struct Animation {
 	uint64 length;
 	std::function<void(_Entity*)> onBegin;
 	std::function<void(_Entity*)> onEnd;
+
+	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 };
 
 
