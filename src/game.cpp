@@ -21,6 +21,8 @@
 #include <iostream>
 #include <functional>
 
+#include <SDL_mixer.h>
+
 #include "main_state.h"
 
 #include "game.h"
@@ -107,6 +109,16 @@ void Game::initialize() {
 	_sys->loader().setNThread(1);
 	_sys->loader().setBasePath(dataPath());
 
+	SDL_InitSubSystem(SDL_INIT_AUDIO);
+	Mix_Init(MIX_INIT_OGG);
+
+	log().log("Initialize SDL_mixer...");
+	if(Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, 1024)) {
+		log().error("Failed to initialize SDL_mixer backend");
+	}
+	Mix_AllocateChannels(SOUNDPLAYER_MAX_CHANNELS);
+	Mix_VolumeMusic(SOUNDPLAYER_DEFAULT_VOLUME);
+
 	_window = _sys->createWindow("lof3", 1280, 720);
 	//_window->setFullscreen(true);
 	_sys->setVSyncEnabled(false);
@@ -129,6 +141,8 @@ void Game::shutdown() {
 
 	_renderModule->shutdown();
 	_renderModule.reset();
+
+	Mix_Quit();
 
 	_window->destroy();
 	_sys->shutdown();

@@ -142,11 +142,11 @@ void MainState::initialize() {
 	_pcSprite[2]       = loadSprite("MB.png");
 	_pcSprite[3]       = loadSprite("Ninja.png");
 
-	_music1      = _game->audio()->loadMusic("music1.ogg");
-	_music1      = _game->audio()->loadMusic("music2.ogg");
-	_music1      = _game->audio()->loadMusic("music3.ogg");
-	_transition1 = _game->audio()->loadMusic("transition1.ogg");
-	_transition2 = _game->audio()->loadMusic("transition2.ogg");
+	_music1      = _game->audio()->loadMusic((_game->dataPath() / "music1.ogg").c_str());
+	_music2      = _game->audio()->loadMusic((_game->dataPath() / "music2.ogg").c_str());
+	_music3      = _game->audio()->loadMusic((_game->dataPath() / "music3.ogg").c_str());
+	_transition1 = _game->audio()->loadMusic((_game->dataPath() / "transition1.ogg").c_str());
+	_transition2 = _game->audio()->loadMusic((_game->dataPath() / "transition2.ogg").c_str());
 
 	_damageAnim.reset(new MoveAnim(ONE_SEC/4, Vector3(0, 20, 0), RELATIVE));
 	_damageAnim->onEnd = [this](_Entity* e){ _entities.destroyEntity(EntityRef(e)); };
@@ -235,6 +235,12 @@ void MainState::initialize() {
 
 
 void MainState::shutdown() {
+	_game->audio()->releaseMusic(_music1);
+	_game->audio()->releaseMusic(_music2);
+	_game->audio()->releaseMusic(_music3);
+	_game->audio()->releaseMusic(_transition1);
+	_game->audio()->releaseMusic(_transition2);
+
 	_menuStack.clear();
 	_mainMenu.reset();
 
@@ -386,6 +392,8 @@ void MainState::init() {
 		_pcHealthFull[pc] = createHealthBar(hpPos + pc * nameOffset,
 		                                    float(_fight->party[pc].hp) / _maxPcHp);
 	}
+
+	_game->audio()->playMusic(_music1);
 
 //	EntityRef test = _entities.createEntity(_entities.root(), "test");
 //	_sprites.addComponent(test);
