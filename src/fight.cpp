@@ -545,8 +545,8 @@ void Fight::play (Target user, Spell s, Target t)
 	party[user].mp -= rules.spell_manacost[s];
 	party[user].cooldown[s] = rules.spell_cooldown[s];
 
-	log().info(party[user].name, " spent ", rules.spell_manacost[s], " - left : ", party[user].mp);
-	log().info(rules.name(s), " in cooldown for ", party[user].cooldown[s], "turns.");
+	log().debug(party[user].name, " spent ", rules.spell_manacost[s], " - left : ", party[user].mp);
+	log().debug(rules.name(s), " in cooldown for ", party[user].cooldown[s], " turns.");
 
 	// Effect
 	switch (s)
@@ -783,7 +783,7 @@ void Fight::damage (Target t, unsigned amount, Element e)
 
 void Fight::control (Target t, Status s)
 {
-	msg("Status ",s," inflicted on ",t,".");
+	msg("Status "+rules.name(s)+" inflicted on "+party[t].name+".");
 	//TODO: Implement tenacity.
 	party[t].status[s] = true;
 }

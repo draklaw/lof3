@@ -379,5 +379,19 @@ string Rules::name(Spell s)
 		default:
 			return "an unknown but possibly reality-threatening spell";
 	}
-	
+}
+
+string Rules::name (Status s)
+{
+	switch (s)
+	{
+		case SILENCE:
+			return "mute";
+		case DISABLE:
+			return "crippled";
+		case SLOW:
+			return "slowed";
+		default:
+			return "mutated";
+	}
 }
