@@ -17,9 +17,20 @@
 //  along with lair.  If not, see <http://www.gnu.org/licenses/>.
 //
 
+
+#include <lair/core/json.h>
+
 #include "rules.h"
 
 #include "fight.h"
+
+
+void parseUnsigned(unsigned& value, const Json::Value& json) {
+	if(json.isConvertibleTo(Json::ValueType::uintValue)) {
+		value = json.asUInt();
+	}
+}
+
 
 Rules::Rules(Logger& logger, const string& ruleset)
 :	_logger(&logger),
@@ -51,6 +62,113 @@ Rules::Rules(Logger& logger, const string& ruleset)
 Rules::~Rules()
 {
 }
+
+
+void Rules::setFromJson(const Json::Value& json) {
+	if(!json.isObject()) {
+		return;
+	}
+
+	const Json::Value& boss = json["boss"];
+	if(boss.isObject()) {
+		const Json::Value& hp = boss["hp"];
+		if(hp.isArray() && hp.size() == 3) {
+			unsigned i = 0;
+			for(const Json::Value v: hp) {
+				parseUnsigned(boss_hp[i], v);
+				++i;
+			}
+		}
+		parseUnsigned(boss_init, boss["init"]);
+	}
+	log().error("Boss: ", boss_hp[0], "/", boss_hp[1], "/", boss_hp[2], ", ", boss_init);
+
+	const Json::Value& jobs = json["jobs"];
+	if(jobs.isObject()) {
+		setJobFromJson(FIGHTER, jobs["fighter"]);
+		setJobFromJson(HEALER,  jobs["healer"]);
+		setJobFromJson(WIZARD,  jobs["wizard"]);
+		setJobFromJson(NINJA,   jobs["ninja"]);
+	}
+
+	const Json::Value& spells = json["spells"];
+	if(spells.isObject()) {
+		setSpellFromJson(AA,              spells["attack"]);
+
+		setSpellFromJson(SMITE,           spells["attack_spell"]);
+		setSpellFromJson(SLICE,           spells["attack_spell"]);
+		setSpellFromJson(NUKES,           spells["attack_spell"]);
+
+		setSpellFromJson(PROTECT,         spells["protect"]);
+
+		setSpellFromJson(HEAL,            spells["heal"]);
+
+		setSpellFromJson(NURSE,           spells["nurse"]);
+
+		setSpellFromJson(REZ,             spells["rez"]);
+
+		setSpellFromJson(SWIPE,           spells["aoe"]);
+		setSpellFromJson(Spell(AOES + NONE),     spells["aoe"]);
+		setSpellFromJson(Spell(AOES + FIRE),     spells["aoe"]);
+		setSpellFromJson(Spell(AOES + ICE),      spells["aoe"]);
+		setSpellFromJson(Spell(AOES + SPARK),    spells["aoe"]);
+		setSpellFromJson(Spell(AOES + ACID),     spells["aoe"]);
+
+		setSpellFromJson(Spell(SHIELDS + NONE),  spells["shield"]);
+		setSpellFromJson(Spell(SHIELDS + FIRE),  spells["shield"]);
+		setSpellFromJson(Spell(SHIELDS + ICE),   spells["shield"]);
+		setSpellFromJson(Spell(SHIELDS + SPARK), spells["shield"]);
+		setSpellFromJson(Spell(SHIELDS + ACID),  spells["shield"]);
+	}
+
+	const Json::Value& curses = json["curses"];
+	if(curses.isObject()) {
+		setCurseFromJson(PUNCH,   curses["attack"]);
+		setCurseFromJson(STORM,   curses["storm"]);
+		setCurseFromJson(STRIKE,  curses["strike"]);
+		setCurseFromJson(VORPAL,  curses["vorpal"]);
+		setCurseFromJson(CRIPPLE, curses["cripple"]);
+		setCurseFromJson(DRAIN,   curses["drain"]);
+		setCurseFromJson(MUD,     curses["mud"]);
+		setCurseFromJson(DISPEL,  curses["dispel"]);
+	}
+}
+
+
+void Rules::setJobFromJson(Job job, const Json::Value& json) {
+	if(!json.isObject()) {
+		return;
+	}
+
+	parseUnsigned(hd[job],   json["health"]);
+	parseUnsigned(mp[job],   json["mana"]);
+	parseUnsigned(init[job], json["init"]);
+}
+
+
+void Rules::setSpellFromJson(Spell spell, const Json::Value& json) {
+	if(!json.isObject()) {
+		return;
+	}
+
+	parseUnsigned(spell_power[spell],    json["power"]);
+	parseUnsigned(spell_utility[spell],  json["utility"]);
+	parseUnsigned(spell_cooldown[spell], json["cooldown"]);
+	parseUnsigned(spell_manacost[spell], json["manacost"]);
+	parseUnsigned(powerup[spell],        json["powerup"]);
+}
+
+
+void Rules::setCurseFromJson(Curse curse, const Json::Value& json) {
+	if(!json.isObject()) {
+		return;
+	}
+
+	parseUnsigned(curse_power[curse],    json["power"]);
+	parseUnsigned(curse_utility[curse],  json["utility"]);
+	parseUnsigned(curse_cooldown[curse], json["cooldown"]);
+}
+
 
 Logger& Rules::log()
 {

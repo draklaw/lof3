@@ -148,7 +148,8 @@ protected:
 
 	Rules       _rules;
 	Player      _player;
-	Fight       _fight;
+	std::unique_ptr<Fight>
+	            _fight;
 	FightState  _state;
 	unsigned    _maxPcHp;
 
