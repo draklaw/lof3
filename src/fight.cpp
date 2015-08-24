@@ -54,7 +54,7 @@ Fight::Fight(Logger& logger, MainState& ms, Rules& r, Player& p, unsigned lvl)
 
 	boss_target = rules.party_size;
 
-	party.push_back({"Alpha",
+	party.push_back({"Ahkua",
 		FIGHTER, lvl+rtd(4),
 		rules.hd[FIGHTER] * lvl+rtd(4),
 		rules.mp[FIGHTER] * lvl+rtd(4),
@@ -63,7 +63,7 @@ Fight::Fight(Logger& logger, MainState& ms, Rules& r, Player& p, unsigned lvl)
 		0,
 		rules.init[FIGHTER]
 	});
-	party.push_back({"Beta",
+	party.push_back({"Lukida",
 		HEALER, lvl+rtd(4),
 		rules.hd[HEALER] * lvl+rtd(4),
 		rules.mp[HEALER] * lvl+rtd(4),
@@ -72,7 +72,7 @@ Fight::Fight(Logger& logger, MainState& ms, Rules& r, Player& p, unsigned lvl)
 		0,
 		rules.init[HEALER]
 	});
-	party.push_back({"Gamma",
+	party.push_back({"Orion",
 		WIZARD, lvl+rtd(4),
 		rules.hd[WIZARD] * lvl+rtd(4),
 		rules.mp[WIZARD] * lvl+rtd(4),
@@ -81,7 +81,7 @@ Fight::Fight(Logger& logger, MainState& ms, Rules& r, Player& p, unsigned lvl)
 		0,
 		rules.init[WIZARD]
 	});
-	party.push_back({"Delta",
+	party.push_back({"Dark Night",
 		NINJA, lvl+rtd(4),
 		rules.hd[NINJA] * lvl+rtd(4),
 		rules.mp[NINJA] * lvl+rtd(4),
