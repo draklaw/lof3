@@ -20,10 +20,23 @@
 
 #include "fight.h"
 
-// Hard-coded data
-unsigned ClassDPS[] = { 4, 1, 2, 5 };
+// Dummy target
+#define NOTARGET (Target) -1
 
-Fight::Fight(Logger& logger, Rules& r, Player& p)
+// Confidence values
+#define ALIVE_CONF  50.0
+#define SLOW_CONF    0.9
+#define DISABLE_CONF 0.8
+#define SILENCE_CONF 0.8
+
+// Multi-target spells thresholds
+#define AOE_THRESHOLD 2
+#define NURSE_THRESHOLD 2
+
+// Subjective HP factor of healers
+#define HEALER_BIAS 0.8
+
+Fight::Fight(Logger& logger, Rules& r, Player& p, unsigned lvl)
 :	_logger(&logger),
 	rules(r),
 	player(p),
@@ -36,36 +49,36 @@ Fight::Fight(Logger& logger, Rules& r, Player& p)
 	boss_target = rules.party_size;
 
 	party.push_back({
-		FIGHTER, 12,
-		rules.hd[FIGHTER] * 12,
-		rules.mp[FIGHTER] * 12,
+		FIGHTER, lvl+rtd(4),
+		rules.hd[FIGHTER] * lvl+rtd(4),
+		rules.mp[FIGHTER] * lvl+rtd(4),
 		NULL,
 		{0}, {0}, {0},
 		0,
 		rules.init[FIGHTER]
 	});
 	party.push_back({
-		HEALER, 11,
-		rules.hd[HEALER] * 11,
-		rules.mp[HEALER] * 11,
+		HEALER, lvl+rtd(4),
+		rules.hd[HEALER] * lvl+rtd(4),
+		rules.mp[HEALER] * lvl+rtd(4),
 		NULL,
 		{0}, {0}, {0},
 		0,
 		rules.init[HEALER]
 	});
 	party.push_back({
-		WIZARD, 10,
-		rules.hd[WIZARD] * 10,
-		rules.mp[WIZARD] * 10,
+		WIZARD, lvl+rtd(4),
+		rules.hd[WIZARD] * lvl+rtd(4),
+		rules.mp[WIZARD] * lvl+rtd(4),
 		NULL,
 		{0}, {0}, {0},
 		0,
 		rules.init[WIZARD]
 	});
 	party.push_back({
-		NINJA, 11,
-		rules.hd[NINJA] * 11,
-		rules.mp[NINJA] * 11,
+		NINJA, lvl+rtd(4),
+		rules.hd[NINJA] * lvl+rtd(4),
+		rules.mp[NINJA] * lvl+rtd(4),
 		NULL,
 		{0}, {0}, {0},
 		0,
@@ -227,26 +240,27 @@ void Fight::curse (Curse c, Target t)
 			break;
 		case VORPAL:
 			damage(t, rules.curse_power[c], NONE);
-			if ((unsigned) rtd() < rules.curse_utility[c])
+			if (rtd() < rules.curse_utility[c])
 				damage(t, (unsigned) -1, NONE);
 			break;
 		case CRIPPLE:
 			damage(t, rules.curse_power[c], NONE);
-			if ((unsigned) rtd() < rules.curse_utility[c])
+			if (rtd() < rules.curse_utility[c])
 				control(t, DISABLE);
 			break;
 		case DRAIN:
 			drain = rules.curse_power[c];
-			if(party[t].mp > drain)
+			if (party[t].mp > drain)
 				party[t].mp -= drain;
 			else
 				party[t].mp = 0;
-			if ((unsigned) rtd() < rules.curse_utility[c])
+			if (rtd() < rules.curse_utility[c])
 				control(t, SILENCE);
 			break;
 		case MUD:
 			for (unsigned i = 0 ; i < rules.party_size ; i++)
-				control(i, SLOW);
+				if (rtd() < rules.curse_utility[c])
+					control(i, SLOW);
 			break;
 		case DISPEL:
 			//TODO: Set resistance at what the party[t].equip provides.
@@ -281,32 +295,32 @@ void Fight::play (Target user, Spell s, Target t)
 	{
 		case AA:
 			//TODO: Add elemental damage for enchanted weapons.
-			damage(boss_target, rules.spell_power[s], NONE);
+			damage(boss_target, rules.spellpower(s, party[user]), NONE);
 			break;
 		case SMITE:
 		case SLICE:
-			damage(boss_target, rules.spell_power[s], NONE);
+			damage(boss_target, rules.spellpower(s, party[user]), NONE);
 			break;
 		case PROTECT:
 			party[t].protector = user;
 			break;
 		case SWIPE:
-			damage(boss_target, rules.spell_power[s], NONE);
+			damage(boss_target, rules.spellpower(s, party[user]), NONE);
 			for (unsigned i = 0 ; i < horde.size() ; i++)
-				damage(boss_target + i, rules.spell_power[s], NONE);
+				damage(boss_target + i, rules.spellpower(s, party[user]), NONE);
 			break;
 		case HEAL:
 			//TODO: Heal bad guys, if somehow targeted.
 			if (t < boss_target)
 			{
-				party[t].hp += rules.spell_power[s];
+				party[t].hp += rules.spellpower(s, party[user]);
 				party[t].hp = min(party[t].hp, rules.max_hp(party[t]));
 			}
 			break;
 		case NURSE:
 			for (unsigned i = 0 ; i < rules.party_size ; i++)
 			{
-				party[i].hp += rules.spell_power[s];
+				party[i].hp += rules.spellpower(s, party[user]);
 				party[i].hp = min(party[i].hp, rules.max_hp(party[i]));
 			}
 			break;
@@ -319,16 +333,16 @@ void Fight::play (Target user, Spell s, Target t)
 		case NUKES + ICE:
 		case NUKES + SPARK:
 		case NUKES + ACID:
-			damage(t, rules.spell_power[s], Element(s-NUKES));
+			damage(t, rules.spellpower(s, party[user]), Element(s-NUKES));
 			break;
 		case AOES:
 		case AOES + FIRE:
 		case AOES + ICE:
 		case AOES + SPARK:
 		case AOES + ACID:
-			damage(boss_target, rules.spell_power[s], Element(s-AOES));
+			damage(boss_target, rules.spellpower(s, party[user]), Element(s-AOES));
 			for (unsigned i = 0 ; i < horde.size() ; i++)
-				damage(boss_target + i, rules.spell_power[s], Element(s-AOES));
+				damage(boss_target + i, rules.spellpower(s, party[user]), Element(s-AOES));
 			break;
 		case SHIELDS:
 		case SHIELDS + FIRE:
@@ -337,7 +351,7 @@ void Fight::play (Target user, Spell s, Target t)
 		case SHIELDS + ACID:
 			//TODO: Increment protection properly iff not currently shielded.
 			if (t < boss_target)
-				party[t].resist[Element(s-SHIELDS)] = rules.spell_power[s];
+				party[t].resist[Element(s-SHIELDS)] = rules.spellpower(s, party[user]);
 			break;
 		// Unimplemented.
 		default://TODO
@@ -356,19 +370,6 @@ void Fight::play (Target user, Spell s, Target t)
 		m.init = rules.minion_init[m.spawn];
 	}
 }
-
-#define ALIVE_CONF 50.0
-#define SLOW_CONF 0.9
-#define DISABLE_CONF 0.8
-#define SILENCE_CONF 0.8
-
-#define AOE_THRESHOLD 2
-#define NURSE_THRESHOLD 2
-
-#define NOTARGET (Target) -1
-
-#define _Spell(x) (Spell(x))
-#define _Elem(x) (Element(x))
 
 void Fight::play_party (Target character)
 {
@@ -519,8 +520,6 @@ Target Fight::pick_target()
 	return boss_target;
 }
 
-#define HEALER_BIAS 0.5
-
 unsigned Fight::count_weak_targets ()
 {
 	unsigned wc = 0;
@@ -543,12 +542,14 @@ Target Fight::find_weak ()
 	{
 		unsigned lowest_hp = (unsigned) -1;
 		for (unsigned i = 0 ; i < rules.party_size ; i++)
-			if (party[i].hp
-			 && party[i].hp * (player.strat[KEEP_HEAL])?HEALER_BIAS:1.0 < lowest_hp)
+		{
+			unsigned subjective_hp = (player.strat[KEEP_HEAL]?HEALER_BIAS:1.0) * party[i].hp;
+			if (party[i].hp && subjective_hp < lowest_hp)
 			{
-				lowest_hp = party[i].hp;
+				lowest_hp = subjective_hp;
 				w = i;
 			}
+		}
 	}
 	else
 		w = rtd(rules.party_size);

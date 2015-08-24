@@ -110,11 +110,8 @@ private:
 
 public:
 	// Class-specific stats (per level)
-	unsigned bab[NB_JOBS];       // Base Attack Bonus
 	unsigned hd[NB_JOBS];        // Hit Dice
 	unsigned mp[NB_JOBS];        // Mana Pool
-	unsigned unlocks[NB_SPELLS]; // Spell levels
-	unsigned powerup[NB_SPELLS]; // Specific spell power per level
 	unsigned init[NB_JOBS];      // Time between each turn
 
 	// Boss and minion stats
@@ -129,6 +126,8 @@ public:
 	unsigned spell_utility[NB_SPELLS];  // Spell utility (%effect or duration)
 	unsigned spell_cooldown[NB_SPELLS]; // Spell-specific cooldown
 	unsigned spell_manacost[NB_SPELLS]; // Spell-specific mana cost
+	unsigned powerup[NB_SPELLS];        // Spell power increase per level
+	unsigned unlocks[NB_SPELLS];        // Spell unlock levels
 	unsigned curse_power[NB_CURSES];    // Curse power (same as spells)
 	unsigned curse_utility[NB_CURSES];  // Curse utility (same as spells)
 	unsigned curse_cooldown[NB_CURSES]; // Curse-specific cooldown
@@ -148,6 +147,9 @@ public:
 
 	// Return the efficiency factor of attacking defense with attack.
 	double elem_factor (Element attack, Element defense);
+
+	// Compute the actual power of s in the hands of u.
+	unsigned spellpower (Spell s, const PC& u);
 
 	// Returns a stat cap for c.
 	unsigned max_hp (PC c);

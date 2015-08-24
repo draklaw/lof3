@@ -1,131 +1,187 @@
 {
     "boss": {
-        "hp":   [ 1000, 600, 300 ],
+        "hp":   [ 5000, 3500, 1500 ],
         "init": 2
     },
 
     "jobs": {
         "fighter": {
-            "health":  30,
-            "mana":    10,
-            "init":    4
+            "hit_dice":  30,
+            "mana_pool": 10,
+            "init":      4
         },
         "healer": {
-            "health":  15,
-            "mana":    10,
-            "init":    5
+            "hit_dice":  15,
+            "mana_pool": 25,
+            "init":      5
         },
         "wizard": {
-            "health":  10,
-            "mana":    10,
-            "init":    5
+            "hit_dice":  10,
+            "mana_pool": 30,
+            "init":      5
         },
         "ninja": {
-            "health":  20,
-            "mana":    10,
-            "init":    3
+            "hit_dice":  20,
+            "mana_pool": 20,
+            "init":      3
         }
     },
 
     "spells": {
         "attack": {
-            "power":    10,
+            "power":    20,
             "utility":  0,
             "cooldown": 0,
             "manacost": 0,
             "powerup":  1
         },
-        "attack_spell": {
-            "power":    10,
+        "smite": {
+            "power":    35,
             "utility":  0,
             "cooldown": 0,
-            "manacost": 5,
-            "powerup":  1
+            "manacost": 80,
+            "powerup":  2
         },
         "protect": {
-            "power":    10,
+            "power":    0,
+            "utility":  0,
+            "cooldown": 1,
+            "manacost": 50,
+            "powerup":  1
+        },
+        "slice": {
+            "power":    50,
             "utility":  0,
             "cooldown": 0,
-            "manacost": 5,
+            "manacost": 40,
+            "powerup":  2
+        },
+        "swipe": {
+            "power":    40,
+            "utility":  0,
+            "cooldown": 1,
+            "manacost": 50,
             "powerup":  1
         },
         "heal": {
-            "power":    10,
+            "power":    50,
             "utility":  0,
             "cooldown": 0,
-            "manacost": 5,
-            "powerup":  1
+            "manacost": 80,
+            "powerup":  5
         },
         "nurse": {
-            "power":    5,
+            "power":    30,
             "utility":  0,
-            "cooldown": 0,
-            "manacost": 5,
-            "powerup":  1
+            "cooldown": 2,
+            "manacost": 100,
+            "powerup":  3
         },
         "rez": {
-            "power":    10,
+            "power":    1,
             "utility":  0,
             "cooldown": 0,
-            "manacost": 5,
-            "powerup":  1
-        },
-        "aoe": {
-            "power":    10,
-            "utility":  0,
-            "cooldown": 0,
-            "manacost": 5,
+            "manacost": 150,
             "powerup":  1
         },
         "shield": {
-            "power":    10,
+            "power":    0,
+            "utility":  0,
+            "cooldown": 4,
+            "manacost": 80,
+            "powerup":  1
+        },
+        "shield_elem": {
+            "power":    0,
+            "utility":  0,
+            "cooldown": 6,
+            "manacost": 80,
+            "powerup":  1
+        },
+        "nuke": {
+            "power":    50,
             "utility":  0,
             "cooldown": 0,
-            "manacost": 5,
-            "powerup":  1
+            "manacost": 40,
+            "powerup":  2
+        },
+        "nuke_elem": {
+            "power":    40,
+            "utility":  0,
+            "cooldown": 0,
+            "manacost": 60,
+            "powerup":  2
+        },
+        "aoe": {
+            "power":    30,
+            "utility":  0,
+            "cooldown": 1,
+            "manacost": 100,
+            "powerup":  2
+        },
+        "aoe_elem": {
+            "power":    20,
+            "utility":  0,
+            "cooldown": 1,
+            "manacost": 120,
+            "powerup":  2
         }
     },
-
     "curses": {
-        "attack": {
-            "power":    10,
+        "punch": {
+            "power":    50,
             "utility":  0,
             "cooldown": 0
         },
         "storm": {
-            "power":    10,
+            "power":    100,
             "utility":  0,
-            "cooldown": 0
+            "cooldown": 2
         },
         "strike": {
-            "power":    10,
+            "power":    200,
             "utility":  0,
-            "cooldown": 0
+            "cooldown": 1
         },
         "vorpal": {
-            "power":    10,
+            "power":    40,
             "utility":  0,
-            "cooldown": 0
+            "cooldown": 2
         },
         "cripple": {
-            "power":    10,
-            "utility":  0,
-            "cooldown": 0
+            "power":    80,
+            "utility":  6,
+            "cooldown": 2
         },
         "drain": {
-            "power":    10,
-            "utility":  0,
-            "cooldown": 0
+            "power":    100,
+            "utility":  40,
+            "cooldown": 2
         },
         "mud": {
-            "power":    10,
-            "utility":  0,
-            "cooldown": 0
+            "power":    0,
+            "utility":  90,
+            "cooldown": 5
         },
         "dispel": {
-            "power":    10,
+            "power":    0,
             "utility":  0,
-            "cooldown": 0
+            "cooldown": 3
+        },
+        "sprites": {
+            "power":    0,
+            "utility":  0,
+            "cooldown": 1
+        },
+        "tomberry": {
+            "power":    0,
+            "utility":  0,
+            "cooldown": 3
+        },
+        "mageling": {
+            "power":    0,
+            "utility":  0,
+            "cooldown": 1
         }
     }
 }
