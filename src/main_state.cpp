@@ -136,6 +136,7 @@ void MainState::initialize() {
 	_healthEmptySprite = loadSprite("health_bar_empty.png");
 	_healthFullSprite  = loadSprite("health_bar_full.png");
 	_menuBgSprite      = loadSprite("menu.png", 3, 3);
+	_statusSprite      = loadSprite("status.png", 3, 1);
 	_bossSprite[0]     = loadSprite("BigBoss1.png");
 	_bossSprite[1]     = loadSprite("BigBoss2.png");
 	_bossSprite[2]     = loadSprite("BigBoss3.png");
@@ -398,9 +399,11 @@ void MainState::init() {
 	                   _camera.viewBox().max().y() - 240, -.8);
 	Vector3 offset(-50, 14, -.01);
 
-	Vector3 namePos(300, 94, -0.01);
+	Vector3 namePos(250, 94, -0.01);
 	Vector3 nameOffset(0, -24, 0);
-	Vector3 hpPos = namePos + Vector3(110, -8, 0);
+	Vector3 statusPos = namePos + Vector3(110, -4, 0);
+	Vector3 statusOffset(16, 0, 0);
+	Vector3 hpPos = namePos + Vector3(160, -8, 0);
 
 	_maxPcHp = 0;
 	for(PC& pc: _fight->party) {
@@ -410,6 +413,18 @@ void MainState::init() {
 		_pc[pc] = createSprite(&_pcSprite[pc], closestPos + pc * offset,
 		                       Vector2(-1, 1), _pcName[pc].c_str());
 		createText(_pcName[pc], namePos + pc * nameOffset);
+		_pcStatus[pc*NB_REAL_STATUS + 0] =
+		        createSprite(&_statusSprite, statusPos + pc * nameOffset + 0 * statusOffset);
+		_pcStatus[pc*NB_REAL_STATUS + 0].sprite()->setIndex(0);
+		_pcStatus[pc*NB_REAL_STATUS + 0].sprite()->setColor(Vector4(1, 1, 1, 0));
+		_pcStatus[pc*NB_REAL_STATUS + 1] =
+		        createSprite(&_statusSprite, statusPos + pc * nameOffset + 1 * statusOffset);
+		_pcStatus[pc*NB_REAL_STATUS + 1].sprite()->setIndex(1);
+		_pcStatus[pc*NB_REAL_STATUS + 1].sprite()->setColor(Vector4(1, 1, 1, 0));
+		_pcStatus[pc*NB_REAL_STATUS + 2] =
+		        createSprite(&_statusSprite, statusPos + pc * nameOffset + 2 * statusOffset);
+		_pcStatus[pc*NB_REAL_STATUS + 2].sprite()->setIndex(2);
+		_pcStatus[pc*NB_REAL_STATUS + 2].sprite()->setColor(Vector4(1, 1, 1, 0));
 		_pcHealthFull[pc] = createHealthBar(hpPos + pc * nameOffset,
 		                                    float(_fight->party[pc].hp) / _maxPcHp);
 	}
@@ -548,6 +563,12 @@ void MainState::playDeathAnim(unsigned target) {
 void MainState::playRezAnim(unsigned target) {
 	lairAssert(target < 4);
 	_anims.get(_pc[target])->play(new SwapSpriteAnim(ONE_SEC/10, &_pcSprite[target], 9));
+}
+
+
+void MainState::setStatusVisibility(unsigned pj, RealStatus status, bool visible) {
+	unsigned index = pj * NB_REAL_STATUS + status;
+	_pcStatus[index].sprite()->setColor(Vector4(1, 1, 1, visible));
 }
 
 

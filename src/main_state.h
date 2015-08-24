@@ -56,6 +56,14 @@ class Game;
 class Font;
 
 
+enum RealStatus {
+	STATUS_MUTE,
+	STATUS_SLOW,
+	STATUS_DISABLE,
+	NB_REAL_STATUS
+};
+
+
 class MainState : public GameState {
 public:
 	MainState(Game* game);
@@ -93,6 +101,7 @@ public:
 	void displayDamages(unsigned target, unsigned damages);
 	void playDeathAnim(unsigned target);
 	void playRezAnim(unsigned target);
+	void setStatusVisibility(unsigned pj, RealStatus status, bool visible);
 
 	void updateMenu();
 	void openMenu(Menu* menu, Menu* parent = nullptr, unsigned entry = 0);
@@ -177,6 +186,7 @@ protected:
 	Sprite      _healthEmptySprite;
 	Sprite      _healthFullSprite;
 	Sprite      _menuBgSprite;
+	Sprite      _statusSprite;
 	Sprite      _bossSprite[3];
 	Sprite      _pcSprite[4];
 	Sprite      _tombSprite;
@@ -196,6 +206,7 @@ protected:
 	EntityRef   _bossHealthFull[4];
 
 	EntityRef   _pc[4];
+	EntityRef   _pcStatus[4 * NB_REAL_STATUS];
 	EntityRef   _pcHealthFull[4];
 	std::string _pcName[4];
 
