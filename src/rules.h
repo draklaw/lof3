@@ -55,6 +55,7 @@ inline constexpr Spell operator+ (Spell s, Element e)
 }
 
 struct PC {
+	string name;                  // They're not just numbers
 	Job job;                      // Character class^H^H^H^H^Hjob
 	unsigned xp;                  // Level
 	unsigned hp;                  // Health

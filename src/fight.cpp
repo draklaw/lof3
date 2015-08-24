@@ -51,7 +51,7 @@ Fight::Fight(Logger& logger, MainState& ms, Rules& r, Player& p, unsigned lvl)
 
 	boss_target = rules.party_size;
 
-	party.push_back({
+	party.push_back({"Alpha",
 		FIGHTER, lvl+rtd(4),
 		rules.hd[FIGHTER] * lvl+rtd(4),
 		rules.mp[FIGHTER] * lvl+rtd(4),
@@ -60,7 +60,7 @@ Fight::Fight(Logger& logger, MainState& ms, Rules& r, Player& p, unsigned lvl)
 		0,
 		rules.init[FIGHTER]
 	});
-	party.push_back({
+	party.push_back({"Beta",
 		HEALER, lvl+rtd(4),
 		rules.hd[HEALER] * lvl+rtd(4),
 		rules.mp[HEALER] * lvl+rtd(4),
@@ -69,7 +69,7 @@ Fight::Fight(Logger& logger, MainState& ms, Rules& r, Player& p, unsigned lvl)
 		0,
 		rules.init[HEALER]
 	});
-	party.push_back({
+	party.push_back({"Gamma",
 		WIZARD, lvl+rtd(4),
 		rules.hd[WIZARD] * lvl+rtd(4),
 		rules.mp[WIZARD] * lvl+rtd(4),
@@ -78,7 +78,7 @@ Fight::Fight(Logger& logger, MainState& ms, Rules& r, Player& p, unsigned lvl)
 		0,
 		rules.init[WIZARD]
 	});
-	party.push_back({
+	party.push_back({"Delta",
 		NINJA, lvl+rtd(4),
 		rules.hd[NINJA] * lvl+rtd(4),
 		rules.mp[NINJA] * lvl+rtd(4),
@@ -284,14 +284,16 @@ void Fight::curse (Curse c, Target t)
 
 void Fight::play (Target user, Spell s, Target t)
 {
-	log().info("User ",user," casts ",s," on ",t,"...");
-
 	// Sanity check.
 	assert (s < NB_SPELLS);
 	assert (user != boss_target);
 	assert (user < boss_target + 1 + horde.size());
 
-	log().info("...sane.");
+	string target_msg = (t == NOTARGET ? "" :
+		(" on " + (t == boss_target ? "you" : party[t].name)));
+	log().error(target_msg);
+	
+	_mainState.showMessage(party[user].name + " casts " + to_string(s) + target_msg + ".");
 
 	//TODO: Trigger spell-specific cooldown.
 	switch (s)
@@ -598,7 +600,7 @@ void Fight::damage (Target t, unsigned amount, Element e)
 		{
 			//TODO: Implement resilience.
 			hp = 0;
-			//TODO: Kill the PC.
+			_mainState._anims.get(_mainState._pc[t])->anim = _mainState._deathAnim->clone();
 		}
 	}
 	else if (t == boss_target)
@@ -611,7 +613,8 @@ void Fight::damage (Target t, unsigned amount, Element e)
 		else
 		{
 			b.hp = 0;
-			//TODO: Kill the boss and his minions.
+			_mainState._anims.get(_mainState._boss)->anim = _mainState._deathAnim->clone();
+			//TODO: Kill his minions.
 		}
 	}
 	else // Minion target
