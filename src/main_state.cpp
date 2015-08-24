@@ -33,6 +33,7 @@ MainState::MainState(Game* game)
 
       _entities(_game->log()),
       _sprites(_game->renderer()),
+      _texts(),
       _inputs(_game->sys(), &_game->log()),
 
       _slotTracker(),
@@ -60,6 +61,8 @@ MainState::MainState(Game* game)
       _menuBgSprite(),
 
       _bg(),
+
+      _pcName{ "Warrior", "Black mage", "White mage", "Ninja" },
 
       _messages(),
       _messageFrame(),
@@ -125,11 +128,14 @@ void MainState::initialize() {
 	_healthFullSprite  = loadSprite("health_bar_full.png");
 	_menuBgSprite      = loadSprite("menu.png", 3, 3);
 	_boss1Sprite       = loadSprite("BigBoss1.png");
-	_warriorSprite     = loadSprite("GTP.png");
-	_blackMageSprite   = loadSprite("MN.png");
-	_whiteMageSprite   = loadSprite("MB.png");
-	_ninjaSprite       = loadSprite("Ninja.png");
+	_pcSprite[0]       = loadSprite("GTP.png");
+	_pcSprite[1]       = loadSprite("MN.png");
+	_pcSprite[2]       = loadSprite("MB.png");
+	_pcSprite[3]       = loadSprite("Ninja.png");
 
+
+	_statusFrame.reset(new Frame(&_menuBgSprite, Vector2(640, 120)));
+	_statusFrame->position = Vector3(0, 0, -.05);
 
 	_messageMargin = 12;
 	_messageOutMargin = 8;
@@ -178,8 +184,7 @@ void MainState::initialize() {
 	                     openMenuFunc(_pcMenu.get(), _spellMenu.get(), 3));
 	_spellMenu->addEntry("Vorpal sword", Menu::ENABLED,
 	                     openMenuFunc(_pcMenu.get(), _spellMenu.get(), 4));
-	_spellMenu->addEntry("Mud pit", Menu::ENABLED,
-	                     openMenuFunc(_pcMenu.get(), _spellMenu.get(), 5));
+	_spellMenu->addEntry("Mud pit", Menu::ENABLED, doActionFunc());
 	_spellMenu->addEntry("Dispel magic", Menu::ENABLED,
 	                     openMenuFunc(_pcMenu.get(), _spellMenu.get(), 6));
 	_spellMenu->layout();
@@ -191,10 +196,10 @@ void MainState::initialize() {
 	_summonMenu->layout();
 	_summonMenu->show(Vector3(_mainMenu->width(), 16, .1));
 
-	_pcMenu->addEntry("Warrior", Menu::ENABLED, doActionFunc());
-	_pcMenu->addEntry("Black mage", Menu::ENABLED, doActionFunc());
-	_pcMenu->addEntry("White mage", Menu::ENABLED, doActionFunc());
-	_pcMenu->addEntry("Ninja", Menu::ENABLED, doActionFunc());
+	_pcMenu->addEntry(_pcName[0], Menu::ENABLED, doActionFunc());
+	_pcMenu->addEntry(_pcName[1], Menu::ENABLED, doActionFunc());
+	_pcMenu->addEntry(_pcName[2], Menu::ENABLED, doActionFunc());
+	_pcMenu->addEntry(_pcName[3], Menu::ENABLED, doActionFunc());
 	_pcMenu->layout();
 	_pcMenu->show(Vector3(_mainMenu->width(), 16, .2));
 
@@ -270,9 +275,9 @@ EntityRef MainState::createSprite(Sprite* sprite, const Vector3& pos,
 }
 
 
-EntityRef MainState::createDamageText(const std::string& text, const Vector3& pos,
+EntityRef MainState::createText(const std::string& text, const Vector3& pos,
                                       const Vector4& color) {
-	EntityRef entity = _entities.createEntity(_entities.root(), "damageText");
+	EntityRef entity = _entities.createEntity(_entities.root(), "text");
 	_texts.addComponent(entity);
 	TextComponent* comp = _texts.get(entity);
 	comp->font = _font.get();
@@ -282,6 +287,32 @@ EntityRef MainState::createDamageText(const std::string& text, const Vector3& po
 	t.translate(pos);
 	entity.setTransform(t);
 	return entity;
+}
+
+
+EntityRef MainState::createDamageText(const std::string& text, const Vector3& pos,
+                                      const Vector4& color) {
+	return createText(text, pos, color);
+}
+
+
+EntityRef MainState::createHealthBar(const Vector3& pos, float size) {
+	EntityRef parent = _entities.createEntity(_entities.root());
+	parent.setTransform(Transform(Translation(pos)));
+
+	Box2 view(Vector2(0, 0), Vector2(size, 1));
+	EntityRef empty = _entities.createEntity(parent, "healthEmpty");
+	_sprites.addComponent(empty);
+	empty.sprite()->setSprite(&_healthEmptySprite);
+	empty.sprite()->setView(view);
+
+	EntityRef full = _entities.createEntity(parent, "healthFull");
+	_sprites.addComponent(full);
+	full.sprite()->setSprite(&_healthFullSprite);
+	full.sprite()->setView(view);
+	full.setTransform(Transform(Translation(Vector3(0, 0, 0.01))));
+
+	return full;
 }
 
 
@@ -295,36 +326,35 @@ void MainState::init() {
 	               Vector3(0, _camera.viewBox().max().y() - 480, -.99))));
 
 
-	_warriorHealthEmpty = _entities.createEntity(_entities.root(), "warriorHealthEmpty");
-	_sprites.addComponent(_warriorHealthEmpty);
-	_warriorHealthEmpty.sprite()->setSprite(&_healthEmptySprite);
-	_warriorHealthEmpty.setTransform(Transform(Translation(
-	               Vector3(20, _camera.viewBox().max().y() - 20, -.10))));
+	_boss = createSprite(&_boss1Sprite,
+	                     Vector3(240, _camera.viewBox().max().y() - 240, -.815),
+	                     Vector2(-1, 1), "Boss");
 
-	_warriorHealthFull = _entities.createEntity(_entities.root(), "warriorHealthFull");
-	_sprites.addComponent(_warriorHealthFull);
-	_warriorHealthFull.sprite()->setSprite(&_healthFullSprite);
-	_warriorHealthFull.setTransform(Transform(Translation(
-	               Vector3(20, _camera.viewBox().max().y() - 20, -.05))));
-	_warriorHealthFull.sprite()->setView(Box2(Vector2(0, 0), Vector2(.66, 1)));
-
+	Vector3 bhpPos(10, _camera.viewBox().max().y() - 22, 0);
+	Vector3 bhpOffset(0, -22, 0);
+	for(unsigned i = 0; i < 3; ++i) {
+		_bossHealthFull[i] = createHealthBar(bhpPos + i * bhpOffset, 1);
+	}
 
 	Vector3 closestPos(_camera.viewBox().max().x() - 30,
-	                   _camera.viewBox().max().y() - 260, -.8);
-	Vector3 offset(-50, 18, -.01);
+	                   _camera.viewBox().max().y() - 240, -.8);
+	Vector3 offset(-50, 14, -.01);
 
-	_boss      = createSprite(&_boss1Sprite,
-	                          Vector3(240, _camera.viewBox().max().y() - 240, -.815),
-	                          Vector2(-1, 1), "ninja");
+	Vector3 namePos(300, 94, -0.01);
+	Vector3 nameOffset(0, -24, 0);
+	Vector3 hpPos = namePos + Vector3(110, -8, 0);
 
-	_warrior   = createSprite(&_warriorSprite, closestPos + 0 * offset,
-	                        Vector2(-1, 1), "warrior");
-	_blackMage = createSprite(&_blackMageSprite, closestPos + 1 * offset,
-	                        Vector2(-1, 1), "blackMage");
-	_whiteMage = createSprite(&_whiteMageSprite, closestPos + 2 * offset,
-	                        Vector2(-1, 1), "whiteMage");
-	_ninja     = createSprite(&_ninjaSprite, closestPos + 3 * offset,
-	                        Vector2(-1, 1), "ninja");
+	_maxPcHp = 0;
+	for(PC& pc: _fight.party) {
+		_maxPcHp = std::max(_maxPcHp, pc.hp);
+	}
+	for(unsigned pc = 0; pc < 4; ++pc) {
+		_pc[pc] = createSprite(&_pcSprite[pc], closestPos + pc * offset,
+		                       Vector2(-1, 1), _pcName[pc].c_str());
+		createText(_pcName[pc], namePos + pc * nameOffset);
+		_pcHealthFull[pc] = createHealthBar(hpPos + pc * nameOffset,
+		                                    float(_fight.party[pc].hp) / _maxPcHp);
+	}
 
 //	EntityRef test = _entities.createEntity(_entities.root(), "test");
 //	_sprites.addComponent(test);
@@ -353,6 +383,11 @@ void MainState::updateTick() {
 			}
 			openMenu(_mainMenu.get());
 		}
+
+		for(unsigned pc = 0; pc < 4; ++pc) {
+			_pcHealthFull[pc].sprite()->setView(
+			            Box2(Vector2(0, 0), Vector2(float(_fight.party[pc].hp) / _maxPcHp, 1)));
+		}
 	}
 }
 
@@ -375,6 +410,8 @@ void MainState::updateFrame() {
 	_entities.updateWorldTransform();
 	_sprites.render(_loop.frameInterp(), _camera);
 	_texts.render(  _loop.frameInterp(), _game->renderer());
+
+	_statusFrame->render(_game->renderer());
 
 	if(_messages.empty()) {
 		for(Menu* menu: _menuStack) {

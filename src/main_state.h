@@ -74,8 +74,11 @@ public:
 	EntityRef createSprite(Sprite* sprite, const Vector3& pos,
 	                       const Vector2& scale,
 	                       const char* name = nullptr);
+	EntityRef createText(const std::string& msg, const Vector3& pos,
+	                     const Vector4& color = Vector4(1, 1, 1, 1));
 	EntityRef createDamageText(const std::string& msg, const Vector3& pos,
 	                           const Vector4& color = Vector4(1, 1, 1, 1));
+	EntityRef createHealthBar(const Vector3& pos, float size);
 	void init();
 
 	void updateTick();
@@ -125,6 +128,7 @@ protected:
 	Player      _player;
 	Fight       _fight;
 	FightState  _state;
+	unsigned    _maxPcHp;
 
 	MenuInputs  _menuInputs;
 
@@ -138,21 +142,19 @@ protected:
 	Sprite      _healthFullSprite;
 	Sprite      _menuBgSprite;
 	Sprite      _boss1Sprite;
-	Sprite      _warriorSprite;
-	Sprite      _blackMageSprite;
-	Sprite      _whiteMageSprite;
-	Sprite      _ninjaSprite;
+	Sprite      _pcSprite[4];
 
 	EntityRef   _bg;
 
 	EntityRef   _boss;
+	EntityRef   _bossHealthFull[4];
 
-	EntityRef   _warriorHealthEmpty;
-	EntityRef   _warriorHealthFull;
-	EntityRef   _warrior;
-	EntityRef   _blackMage;
-	EntityRef   _whiteMage;
-	EntityRef   _ninja;
+	EntityRef   _pc[4];
+	EntityRef   _pcHealthFull[4];
+	std::string _pcName[4];
+
+	std::unique_ptr<Frame>
+	            _statusFrame;
 
 	std::deque<std::string>
 	            _messages;
