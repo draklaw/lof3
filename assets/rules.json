@@ -45,7 +45,7 @@
         "protect": {
             "power":    0,
             "utility":  0,
-            "cooldown": 1,
+            "cooldown": 2,
             "manacost": 50,
             "powerup":  1
         },
@@ -59,7 +59,7 @@
         "swipe": {
             "power":    40,
             "utility":  0,
-            "cooldown": 1,
+            "cooldown": 2,
             "manacost": 50,
             "powerup":  1
         },
@@ -73,7 +73,7 @@
         "nurse": {
             "power":    30,
             "utility":  0,
-            "cooldown": 2,
+            "cooldown": 3,
             "manacost": 100,
             "powerup":  3
         },
@@ -87,14 +87,14 @@
         "shield": {
             "power":    0,
             "utility":  0,
-            "cooldown": 4,
+            "cooldown": 5,
             "manacost": 80,
             "powerup":  1
         },
         "shield_elem": {
             "power":    0,
             "utility":  0,
-            "cooldown": 6,
+            "cooldown": 7,
             "manacost": 80,
             "powerup":  1
         },
@@ -115,14 +115,14 @@
         "aoe": {
             "power":    30,
             "utility":  0,
-            "cooldown": 1,
+            "cooldown": 2,
             "manacost": 100,
             "powerup":  2
         },
         "aoe_elem": {
             "power":    20,
             "utility":  0,
-            "cooldown": 1,
+            "cooldown": 2,
             "manacost": 120,
             "powerup":  2
         }
@@ -136,52 +136,52 @@
         "storm": {
             "power":    100,
             "utility":  0,
-            "cooldown": 2
+            "cooldown": 3
         },
         "strike": {
             "power":    200,
             "utility":  0,
-            "cooldown": 1
+            "cooldown": 2
         },
         "vorpal": {
             "power":    40,
             "utility":  0,
-            "cooldown": 2
+            "cooldown": 3
         },
         "cripple": {
             "power":    80,
             "utility":  6,
-            "cooldown": 2
+            "cooldown": 3
         },
         "drain": {
             "power":    100,
             "utility":  40,
-            "cooldown": 2
+            "cooldown": 3
         },
         "mud": {
             "power":    0,
             "utility":  90,
-            "cooldown": 5
+            "cooldown": 6
         },
         "dispel": {
             "power":    0,
             "utility":  0,
-            "cooldown": 3
+            "cooldown": 4
         },
         "sprites": {
             "power":    0,
             "utility":  0,
-            "cooldown": 1
+            "cooldown": 2
         },
         "tomberry": {
             "power":    0,
             "utility":  0,
-            "cooldown": 3
+            "cooldown": 4
         },
         "mageling": {
             "power":    0,
             "utility":  0,
-            "cooldown": 1
+            "cooldown": 2
         }
     }
 }
