@@ -28,6 +28,9 @@
 #include "main_state.h"
 
 
+#define ONE_SEC (1000000000)
+
+
 MainState::MainState(Game* game)
 	: _game(game),
 
@@ -48,7 +51,7 @@ MainState::MainState(Game* game)
 
       _rules(log(), ""),
       _player{ {0}, {0}, {0}, 0, {0}, {0} },
-      _fight(log(), _rules, _player),
+      _fight(),
       _state(PLAYING),
 
       _menuInputs(),
@@ -134,6 +137,16 @@ void MainState::initialize() {
 	_pcSprite[3]       = loadSprite("Ninja.png");
 
 
+	_damageAnim.reset(new MoveAnim(ONE_SEC/4, Vector3(0, 20, 0), RELATIVE));
+	_damageAnim->onEnd = [this](_Entity* e){ _entities.destroyEntity(EntityRef(e)); };
+
+	_deathAnim.reset(new Sequence);
+	for(unsigned i = 0; i < 4; ++i) {
+		_deathAnim->anims.push_back(new SpriteColorAnim(ONE_SEC / 10, Vector4(1, 1, 1, 1)));
+		_deathAnim->anims.push_back(new SpriteColorAnim(ONE_SEC / 10, Vector4(1, 1, 1, 0)));
+	}
+
+
 	_statusFrame.reset(new Frame(&_menuBgSprite, Vector2(640, 120)));
 	_statusFrame->position = Vector3(0, 0, -.05);
 
@@ -203,6 +216,9 @@ void MainState::initialize() {
 	_pcMenu->layout();
 	_pcMenu->show(Vector3(_mainMenu->width(), 16, .2));
 
+
+	_rules.setFromJson(_game->sys()->loader().getJson("rules.json"));
+
 	_initialized = true;
 }
 
@@ -271,6 +287,7 @@ EntityRef MainState::createSprite(Sprite* sprite, const Vector3& pos,
 	_sprites.addComponent(entity);
 	entity.sprite()->setSprite(sprite);
 	entity.setTransform(Translation(pos) * Eigen::Scaling(scale.x(), scale.y(), 1.f));
+	_anims.addComponent(entity);
 	return entity;
 }
 
@@ -292,7 +309,11 @@ EntityRef MainState::createText(const std::string& text, const Vector3& pos,
 
 EntityRef MainState::createDamageText(const std::string& text, const Vector3& pos,
                                       const Vector4& color) {
-	return createText(text, pos, color);
+	EntityRef entity = createText(text, pos, color);
+	_anims.addComponent(entity);
+	AnimationComponent* comp = _anims.get(entity);
+	comp->anim = _damageAnim->clone();
+	return entity;
 }
 
 
@@ -318,6 +339,8 @@ EntityRef MainState::createHealthBar(const Vector3& pos, float size) {
 
 void MainState::init() {
 	log().log("Initialize main state.");
+
+	_fight.reset(new Fight(log(), _rules, _player));
 
 	_bg = _entities.createEntity(_entities.root(), "bg");
 	_sprites.addComponent(_bg);
@@ -345,7 +368,7 @@ void MainState::init() {
 	Vector3 hpPos = namePos + Vector3(110, -8, 0);
 
 	_maxPcHp = 0;
-	for(PC& pc: _fight.party) {
+	for(PC& pc: _fight->party) {
 		_maxPcHp = std::max(_maxPcHp, pc.hp);
 	}
 	for(unsigned pc = 0; pc < 4; ++pc) {
@@ -353,7 +376,7 @@ void MainState::init() {
 		                       Vector2(-1, 1), _pcName[pc].c_str());
 		createText(_pcName[pc], namePos + pc * nameOffset);
 		_pcHealthFull[pc] = createHealthBar(hpPos + pc * nameOffset,
-		                                    float(_fight.party[pc].hp) / _maxPcHp);
+		                                    float(_fight->party[pc].hp) / _maxPcHp);
 	}
 
 //	EntityRef test = _entities.createEntity(_entities.root(), "test");
@@ -372,9 +395,9 @@ void MainState::updateTick() {
 	if(_state == PLAYING
 	&& (_loop.tickCount() % 30) == 0) { // 2 turns per second
 		log().warning("Turn");
-		if(_fight.game_over()) {
+		if(_fight->game_over()) {
 			_state = GAME_OVER;
-		} else if(_fight.tick_fight()) {
+		} else if(_fight->tick_fight()) {
 			_state = BOSS_TURN;
 			updateMenu();
 			openMenu(_mainMenu.get());
@@ -382,11 +405,11 @@ void MainState::updateTick() {
 
 		for(unsigned pc = 0; pc < 4; ++pc) {
 			_pcHealthFull[pc].sprite()->setView(
-			            Box2(Vector2(0, 0), Vector2(float(_fight.party[pc].hp) / _maxPcHp, 1)));
+			            Box2(Vector2(0, 0), Vector2(float(_fight->party[pc].hp) / _maxPcHp, 1)));
 		}
 
-		_bossHealthFull[_fight.tier].sprite()->setView(
-			            Box2(Vector2(0, 0), Vector2(_fight.boss_hp_rate(), 1)));
+		_bossHealthFull[_fight->tier].sprite()->setView(
+			            Box2(Vector2(0, 0), Vector2(_fight->boss_hp_rate(), 1)));
 
 	}
 }
@@ -397,6 +420,8 @@ void MainState::updateFrame() {
 	if(!_messages.empty()) {
 		if(_menuInputs.ok->justPressed()
 		|| _menuInputs.cancel->justPressed()) {
+			createDamageText("!!! TEST !!!", Vector3(200, 200, .999), Vector4(1, .5, 0, 1));
+			_anims.get(_pc[0])->play(_deathAnim->clone());
 			nextMessage();
 		}
 	} else if(!_menuStack.empty()) {
@@ -410,6 +435,7 @@ void MainState::updateFrame() {
 	_entities.updateWorldTransform();
 	_sprites.render(_loop.frameInterp(), _camera);
 	_texts.render(  _loop.frameInterp(), _game->renderer());
+	_anims.update(_loop.tickDuration());
 
 	_statusFrame->render(_game->renderer());
 
@@ -475,21 +501,21 @@ void MainState::layoutMessage() {
 
 void MainState::updateMenu() {
 	for(unsigned i = 0; i < 4; ++i) {
-		_pcMenu->setEnabled(i, _fight.can_haz(PUNCH, i));
+		_pcMenu->setEnabled(i, _fight->can_haz(PUNCH, i));
 	}
 
-	_mainMenu->setEnabled(MAIN_SWITCH, _fight.can_haz(SWITCH));
+	_mainMenu->setEnabled(MAIN_SWITCH, _fight->can_haz(SWITCH));
 	for(unsigned i = 0; i < NB_ELEMS; ++i) {
-		_switchMenu->setEnabled(i, _fight.can_haz(SWITCH, i));
+		_switchMenu->setEnabled(i, _fight->can_haz(SWITCH, i));
 	}
 
-	_spellMenu->setEnabled(SPELL_STORM,   _fight.can_haz(STORM));
-	_spellMenu->setEnabled(SPELL_STRIKE,  _fight.can_haz(STRIKE));
-	_spellMenu->setEnabled(SPELL_CRIPPLE, _fight.can_haz(CRIPPLE));
-	_spellMenu->setEnabled(SPELL_DRAIN,   _fight.can_haz(DRAIN));
-	_spellMenu->setEnabled(SPELL_VORPAL,  _fight.can_haz(VORPAL));
-	_spellMenu->setEnabled(SPELL_MUD,     _fight.can_haz(MUD));
-	_spellMenu->setEnabled(SPELL_DISPEL,  _fight.can_haz(DISPEL));
+	_spellMenu->setEnabled(SPELL_STORM,   _fight->can_haz(STORM));
+	_spellMenu->setEnabled(SPELL_STRIKE,  _fight->can_haz(STRIKE));
+	_spellMenu->setEnabled(SPELL_CRIPPLE, _fight->can_haz(CRIPPLE));
+	_spellMenu->setEnabled(SPELL_DRAIN,   _fight->can_haz(DRAIN));
+	_spellMenu->setEnabled(SPELL_VORPAL,  _fight->can_haz(VORPAL));
+	_spellMenu->setEnabled(SPELL_MUD,     _fight->can_haz(MUD));
+	_spellMenu->setEnabled(SPELL_DISPEL,  _fight->can_haz(DISPEL));
 }
 
 
@@ -530,26 +556,26 @@ void MainState::doAction() {
 	switch(_menuStack[0]->selected()) {
 	case MAIN_ATTACK: {
 		lairAssert(_menuStack.size() == 2);
-		_fight.curse(PUNCH, _menuStack.back()->selected());
+		_fight->curse(PUNCH, _menuStack.back()->selected());
 		break;
 	}
 	case MAIN_SWITCH: {
 		lairAssert(_menuStack.size() == 2);
 		switch(_menuStack[1]->selected()) {
 		case NONE:
-			_fight.curse(SWITCH, NONE);
+			_fight->curse(SWITCH, NONE);
 			break;
 		case FIRE:
-			_fight.curse(SWITCH, FIRE);
+			_fight->curse(SWITCH, FIRE);
 			break;
 		case ICE:
-			_fight.curse(SWITCH, ICE);
+			_fight->curse(SWITCH, ICE);
 			break;
 		case SPARK:
-			_fight.curse(SWITCH, SPARK);
+			_fight->curse(SWITCH, SPARK);
 			break;
 		case ACID:
-			_fight.curse(SWITCH, ACID);
+			_fight->curse(SWITCH, ACID);
 			break;
 		}
 		break;
@@ -559,31 +585,31 @@ void MainState::doAction() {
 		switch(_menuStack[1]->selected()) {
 		case SPELL_STORM:
 			lairAssert(_menuStack.size() == 2);
-			_fight.curse(STORM, -1);
+			_fight->curse(STORM, -1);
 			break;
 		case SPELL_STRIKE:
 			lairAssert(_menuStack.size() == 3);
-			_fight.curse(STRIKE, _menuStack.back()->selected());
+			_fight->curse(STRIKE, _menuStack.back()->selected());
 			break;
 		case SPELL_CRIPPLE:
 			lairAssert(_menuStack.size() == 3);
-			_fight.curse(CRIPPLE, _menuStack.back()->selected());
+			_fight->curse(CRIPPLE, _menuStack.back()->selected());
 			break;
 		case SPELL_DRAIN:
 			lairAssert(_menuStack.size() == 3);
-			_fight.curse(DRAIN, _menuStack.back()->selected());
+			_fight->curse(DRAIN, _menuStack.back()->selected());
 			break;
 		case SPELL_VORPAL:
 			lairAssert(_menuStack.size() == 3);
-			_fight.curse(VORPAL, _menuStack.back()->selected());
+			_fight->curse(VORPAL, _menuStack.back()->selected());
 			break;
 		case SPELL_MUD:
 			lairAssert(_menuStack.size() == 2);
-			_fight.curse(MUD, -1);
+			_fight->curse(MUD, -1);
 			break;
 		case SPELL_DISPEL:
 			lairAssert(_menuStack.size() == 3);
-			_fight.curse(DISPEL, _menuStack.back()->selected());
+			_fight->curse(DISPEL, _menuStack.back()->selected());
 			break;
 		}
 		break;

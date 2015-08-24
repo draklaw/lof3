@@ -141,7 +141,12 @@ public:
 	Rules(Logger& logger, const string& rules_source);
 	~Rules();
 
-	// Returns the efficiency factor of attacking defense with attack.
+	void setFromJson(const Json::Value& json);
+	void setJobFromJson(Job job, const Json::Value& json);
+	void setSpellFromJson(Spell spell, const Json::Value& json);
+	void setCurseFromJson(Curse curse, const Json::Value& json);
+
+	// Return the efficiency factor of attacking defense with attack.
 	double elem_factor (Element attack, Element defense);
 
 	// Returns a stat cap for c.

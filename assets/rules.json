@@ -1,0 +1,131 @@
+{
+    "boss": {
+        "hp":   [ 1000, 600, 300 ],
+        "init": 2
+    },
+
+    "jobs": {
+        "fighter": {
+            "health":  30,
+            "mana":    10,
+            "init":    4
+        },
+        "healer": {
+            "health":  15,
+            "mana":    10,
+            "init":    5
+        },
+        "wizard": {
+            "health":  10,
+            "mana":    10,
+            "init":    5
+        },
+        "ninja": {
+            "health":  20,
+            "mana":    10,
+            "init":    3
+        }
+    },
+
+    "spells": {
+        "attack": {
+            "power":    10,
+            "utility":  0,
+            "cooldown": 0,
+            "manacost": 0,
+            "powerup":  1
+        },
+        "attack_spell": {
+            "power":    10,
+            "utility":  0,
+            "cooldown": 0,
+            "manacost": 5,
+            "powerup":  1
+        },
+        "protect": {
+            "power":    10,
+            "utility":  0,
+            "cooldown": 0,
+            "manacost": 5,
+            "powerup":  1
+        },
+        "heal": {
+            "power":    10,
+            "utility":  0,
+            "cooldown": 0,
+            "manacost": 5,
+            "powerup":  1
+        },
+        "nurse": {
+            "power":    5,
+            "utility":  0,
+            "cooldown": 0,
+            "manacost": 5,
+            "powerup":  1
+        },
+        "rez": {
+            "power":    10,
+            "utility":  0,
+            "cooldown": 0,
+            "manacost": 5,
+            "powerup":  1
+        },
+        "aoe": {
+            "power":    10,
+            "utility":  0,
+            "cooldown": 0,
+            "manacost": 5,
+            "powerup":  1
+        },
+        "shield": {
+            "power":    10,
+            "utility":  0,
+            "cooldown": 0,
+            "manacost": 5,
+            "powerup":  1
+        }
+    },
+
+    "curses": {
+        "attack": {
+            "power":    10,
+            "utility":  0,
+            "cooldown": 0
+        },
+        "storm": {
+            "power":    10,
+            "utility":  0,
+            "cooldown": 0
+        },
+        "strike": {
+            "power":    10,
+            "utility":  0,
+            "cooldown": 0
+        },
+        "vorpal": {
+            "power":    10,
+            "utility":  0,
+            "cooldown": 0
+        },
+        "cripple": {
+            "power":    10,
+            "utility":  0,
+            "cooldown": 0
+        },
+        "drain": {
+            "power":    10,
+            "utility":  0,
+            "cooldown": 0
+        },
+        "mud": {
+            "power":    10,
+            "utility":  0,
+            "cooldown": 0
+        },
+        "dispel": {
+            "power":    10,
+            "utility":  0,
+            "cooldown": 0
+        }
+    }
+}
