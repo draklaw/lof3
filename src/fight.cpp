@@ -136,9 +136,14 @@ bool Fight::tick_fight ()
 
 		if (tier < 2 && boss.hp < rules.boss_hp[tier+1])
 		{
-			string status = (tier == 0) ? "somewhat irritated." : "REALLY PISSED OFF NOW !";
+			if(tier == 0) {
+				msg("You are somewhat irritated.");
+				_mainState._anims.get(_mainState._boss)->play(_mainState._boss0to1Anim.get());
+			} else {
+				msg("You are REALLY PISSED OFF NOW !");
+				_mainState._anims.get(_mainState._boss)->play(_mainState._boss1to2Anim.get());
+			}
 			tier++;
-			msg("You are... " + status);
 		}
 		boss.init = rules.boss_init;
 		return true;
