@@ -89,7 +89,7 @@ public:
 	EntityRef createDamageText(const std::string& msg, const Vector3& pos,
 	                           const Vector4& color = Vector4(1, 1, 1, 1));
 	EntityRef createHealthBar(const Vector3& pos, float size);
-	void init();
+	void initFight(unsigned lvl);
 
 	void play();
 	void updateHealthBars();
@@ -171,6 +171,7 @@ public:
 	unsigned    _maxPcHp;
 
 	MenuInputs  _menuInputs;
+	Input*      _debugInput;
 
 	Vector3     _damagePos[5];
 

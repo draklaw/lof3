@@ -51,7 +51,7 @@ Rules::Rules(Logger& logger, const string& ruleset)
 	curse_power{20,0},
 	curse_utility{},
 	curse_cooldown{},
-	elem_multiplier{1.5,3.0,-0.5},
+	elem_multiplier{1.5,3.0,0.0},
 	max_summons(5),
 	party_size(4)
 {

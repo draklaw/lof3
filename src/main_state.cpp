@@ -50,7 +50,7 @@ MainState::MainState(Game* game)
       _fpsCount(0),
 
       _rules(log(), ""),
-      _player{ {0}, {0}, {1,1,1,1,1,1,1,1,1,1,1,1,1}, 0, {0}, {0} },
+      _player{ {0}, {0}, {0,0,0,0,0,0,0,0,0,0,0,0,0}, 0, {0}, {0} },
       _fight(),
       _state(PLAYING),
 
@@ -123,6 +123,9 @@ void MainState::initialize() {
 	_inputs.mapScanCode(_menuInputs.cancel, SDL_SCANCODE_LEFT);
 	_inputs.mapScanCode(_menuInputs.cancel, SDL_SCANCODE_ESCAPE);
 
+	//TODO: Remove cheats.
+	_debugInput = _inputs.addInput("Debug");
+	_inputs.mapScanCode(_debugInput, SDL_SCANCODE_F1);
 
 	_fontJson = _game->sys()->loader().getJson("8-bit_operator+_regular_23.json");
 	_fontTex  = _game->renderer()->getTexture(_fontJson["file"].asString(),
@@ -268,24 +271,38 @@ void MainState::shutdown() {
 void MainState::run() {
 	lairAssert(_initialized);
 
-	_running = true;
-
-	init();
-
 	log().log("Starting main state...");
+	_running = true;
 	_loop.start();
 	_fpsTime  = _game->sys()->getTimeNs();
 	_fpsCount = 0;
-	while(_running) {
-		switch(_loop.nextEvent()) {
-		case InterpLoop::Tick:
-			updateTick();
-			break;
-		case InterpLoop::Frame:
-			updateFrame();
-			break;
-		}
-	}
+
+	unsigned lvl = 0;
+	do {
+		log().log("Our heroes strike",(lvl?".":" again !"));
+
+		lvl += 20;
+		_player.strat[rand()%NB_STRATS] = true;
+		_player.strat[rand()%NB_STRATS] = true;
+		_player.strat[rand()%NB_STRATS] = true;
+
+		initFight(lvl);
+		_state = PLAYING;
+
+		do {
+			switch(_loop.nextEvent()) {
+			case InterpLoop::Tick:
+				updateTick();
+				break;
+			case InterpLoop::Frame:
+				updateFrame();
+				break;
+			}
+		} while (_state != GAME_OVER);
+
+	} while (_fight->boss.hp);
+	log().log("The mighty has fallen...");
+
 	log().log("Stopping main state...");
 	_loop.stop();
 }
@@ -367,10 +384,13 @@ EntityRef MainState::createHealthBar(const Vector3& pos, float size) {
 }
 
 
-void MainState::init() {
+void MainState::initFight(unsigned lvl) {
 	log().log("Initialize main state.");
 
-	_fight.reset(new Fight(log(), *this, _rules, _player, 50));
+	while (_entities.root().firstChild().isValid())
+		_entities.destroyEntity(_entities.root().firstChild());
+
+	_fight.reset(new Fight(log(), *this, _rules, _player, lvl));
 
 	_damagePos[0] = Vector3(567, _camera.viewBox().max().y() - 120, .5);
 	_damagePos[1] = Vector3(517, _camera.viewBox().max().y() - 120, .5);
@@ -483,8 +503,9 @@ void MainState::updateFrame() {
 
 	_inputs.sync();
 
-	if(_menuInputs.cancel->justPressed()) {
-		// Debug stuff here...
+	if(_debugInput->justPressed()) {
+		_state = GAME_OVER;
+		_menuStack.clear();
 	}
 
 	if(!_messages.empty()) {
@@ -594,8 +615,8 @@ void MainState::setStatusVisibility(unsigned pj, RealStatus status, bool visible
 
 
 void MainState::updateMenu() {
-	for(unsigned i = 0; i < 4; ++i) {
-		_pcMenu->setEnabled(i, _fight->can_haz(PUNCH, i));
+	for(unsigned i = 0; i < _fight->rules.party_size; ++i) {
+		_pcMenu->setEnabled(3-i, _fight->can_haz(PUNCH, i));
 	}
 
 	_mainMenu->setEnabled(MAIN_SWITCH, _fight->can_haz(SWITCH));
