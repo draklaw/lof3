@@ -119,7 +119,7 @@ bool Fight::game_over ()
 
 double Fight::boss_hp_rate()
 {
-	return boss.hp / rules.boss_hp[tier];
+	return double(boss.hp) / rules.boss_hp[tier];
 }
 
 bool Fight::can_haz (Curse curse, Target t)

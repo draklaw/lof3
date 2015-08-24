@@ -333,7 +333,7 @@ void MainState::init() {
 	Vector3 bhpPos(10, _camera.viewBox().max().y() - 22, 0);
 	Vector3 bhpOffset(0, -22, 0);
 	for(unsigned i = 0; i < 3; ++i) {
-		_bossHealthFull[i] = createHealthBar(bhpPos + i * bhpOffset, 1);
+		_bossHealthFull[2-i] = createHealthBar(bhpPos + i * bhpOffset, 1);
 	}
 
 	Vector3 closestPos(_camera.viewBox().max().x() - 30,
@@ -388,6 +388,10 @@ void MainState::updateTick() {
 			_pcHealthFull[pc].sprite()->setView(
 			            Box2(Vector2(0, 0), Vector2(float(_fight.party[pc].hp) / _maxPcHp, 1)));
 		}
+
+		_bossHealthFull[_fight.tier].sprite()->setView(
+			            Box2(Vector2(0, 0), Vector2(_fight.boss_hp_rate(), 1)));
+
 	}
 }
 
