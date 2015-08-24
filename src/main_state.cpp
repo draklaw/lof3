@@ -60,6 +60,12 @@ MainState::MainState(Game* game)
       _fontJson(),
       _font(),
 
+      _music1(nullptr),
+      _music2(nullptr),
+      _music3(nullptr),
+      _transition1(nullptr),
+      _transition2(nullptr),
+
       _bgSprite(),
       _menuBgSprite(),
 
@@ -136,6 +142,11 @@ void MainState::initialize() {
 	_pcSprite[2]       = loadSprite("MB.png");
 	_pcSprite[3]       = loadSprite("Ninja.png");
 
+	_music1      = _game->audio()->loadMusic("music1.ogg");
+	_music1      = _game->audio()->loadMusic("music2.ogg");
+	_music1      = _game->audio()->loadMusic("music3.ogg");
+	_transition1 = _game->audio()->loadMusic("transition1.ogg");
+	_transition2 = _game->audio()->loadMusic("transition2.ogg");
 
 	_damageAnim.reset(new MoveAnim(ONE_SEC/4, Vector3(0, 20, 0), RELATIVE));
 	_damageAnim->onEnd = [this](_Entity* e){ _entities.destroyEntity(EntityRef(e)); };
@@ -286,7 +297,7 @@ EntityRef MainState::createSprite(Sprite* sprite, const Vector3& pos,
 	EntityRef entity = _entities.createEntity(_entities.root(), name);
 	_sprites.addComponent(entity);
 	entity.sprite()->setSprite(sprite);
-	entity.setTransform(Translation(pos) * Eigen::Scaling(scale.x(), scale.y(), 1.f));
+	entity.place(Translation(pos) * Eigen::Scaling(scale.x(), scale.y(), 1.f));
 	_anims.addComponent(entity);
 	return entity;
 }
@@ -300,9 +311,7 @@ EntityRef MainState::createText(const std::string& text, const Vector3& pos,
 	comp->font = _font.get();
 	comp->text = text;
 	comp->color = color;
-	Transform t = Transform::Identity();
-	t.translate(pos);
-	entity.setTransform(t);
+	entity.place(Transform(Translation(pos)));
 	return entity;
 }
 
@@ -319,7 +328,7 @@ EntityRef MainState::createDamageText(const std::string& text, const Vector3& po
 
 EntityRef MainState::createHealthBar(const Vector3& pos, float size) {
 	EntityRef parent = _entities.createEntity(_entities.root());
-	parent.setTransform(Transform(Translation(pos)));
+	parent.place(Transform(Translation(pos)));
 
 	Box2 view(Vector2(0, 0), Vector2(size, 1));
 	EntityRef empty = _entities.createEntity(parent, "healthEmpty");
@@ -331,7 +340,7 @@ EntityRef MainState::createHealthBar(const Vector3& pos, float size) {
 	_sprites.addComponent(full);
 	full.sprite()->setSprite(&_healthFullSprite);
 	full.sprite()->setView(view);
-	full.setTransform(Transform(Translation(Vector3(0, 0, 0.01))));
+	full.place(Transform(Translation(Vector3(0, 0, 0.01))));
 
 	return full;
 }
@@ -345,8 +354,7 @@ void MainState::init() {
 	_bg = _entities.createEntity(_entities.root(), "bg");
 	_sprites.addComponent(_bg);
 	_bg.sprite()->setSprite(&_bgSprite);
-	_bg.setTransform(Transform(Translation(
-	               Vector3(0, _camera.viewBox().max().y() - 480, -.99))));
+	_bg.place(Transform(Translation(Vector3(0, _camera.viewBox().max().y() - 480, -.99))));
 
 
 	_boss = createSprite(&_boss1Sprite,

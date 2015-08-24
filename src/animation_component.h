@@ -124,7 +124,6 @@ struct SpriteColorAnim : public Animation {
 class AnimationComponent : public Component {
 public:
 	AnimationComponent(_Entity* entity, SparseComponentManager<AnimationComponent>* manager);
-	AnimationComponent(const AnimationComponent& other);
 	AnimationComponent(AnimationComponent&& other);
 	~AnimationComponent();
 
