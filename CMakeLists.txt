@@ -49,6 +49,8 @@ add_executable(lof3
 	src/font.cpp
 	src/menu.cpp
 
+	src/text_component.cpp
+
 	src/rules.cpp
 	src/fight.cpp
 

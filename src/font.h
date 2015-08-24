@@ -61,7 +61,7 @@ protected:
 		unsigned advance;
 	};
 
-	typedef std::unordered_map<unsigned, Glyph,std::hash<unsigned>, std::equal_to<unsigned>,
+	typedef std::unordered_map<unsigned, Glyph, std::hash<unsigned>, std::equal_to<unsigned>,
 	                           Eigen::aligned_allocator<std::pair<unsigned, Glyph>>> GlyphMap;
 
 protected:

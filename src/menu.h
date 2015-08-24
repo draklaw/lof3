@@ -109,7 +109,11 @@ protected:
 	EntryList   _entries;
 
 	bool        _visible;
+
+public:
 	Frame       _frame;
+
+protected:
 	Font*       _font;
 };
 

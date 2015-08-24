@@ -33,6 +33,7 @@ MainState::MainState(Game* game)
 
       _entities(_game->log()),
       _sprites(_game->renderer()),
+      _texts(),
       _inputs(_game->sys(), &_game->log()),
 
       _slotTracker(),
@@ -45,6 +46,11 @@ MainState::MainState(Game* game)
       _fpsTime(0),
       _fpsCount(0),
 
+      _rules(log(), ""),
+      _player{ {0}, {0}, {0}, 0, {0}, {0} },
+      _fight(log(), _rules, _player),
+      _state(PLAYING),
+
       _menuInputs(),
 
       _fontTex(nullptr),
@@ -55,6 +61,8 @@ MainState::MainState(Game* game)
       _menuBgSprite(),
 
       _bg(),
+
+      _pcName{ "Warrior", "Black mage", "White mage", "Ninja" },
 
       _messages(),
       _messageFrame(),
@@ -120,11 +128,14 @@ void MainState::initialize() {
 	_healthFullSprite  = loadSprite("health_bar_full.png");
 	_menuBgSprite      = loadSprite("menu.png", 3, 3);
 	_boss1Sprite       = loadSprite("BigBoss1.png");
-	_warriorSprite     = loadSprite("GTP.png");
-	_blackMageSprite   = loadSprite("MN.png");
-	_whiteMageSprite   = loadSprite("MB.png");
-	_ninjaSprite       = loadSprite("Ninja.png");
+	_pcSprite[0]       = loadSprite("GTP.png");
+	_pcSprite[1]       = loadSprite("MN.png");
+	_pcSprite[2]       = loadSprite("MB.png");
+	_pcSprite[3]       = loadSprite("Ninja.png");
 
+
+	_statusFrame.reset(new Frame(&_menuBgSprite, Vector2(640, 120)));
+	_statusFrame->position = Vector3(0, 0, -.05);
 
 	_messageMargin = 12;
 	_messageOutMargin = 8;
@@ -134,50 +145,63 @@ void MainState::initialize() {
 
 	_mainMenu.reset(new Menu(&_menuBgSprite, _font.get(), &_menuInputs));
 	_switchMenu.reset(new Menu(&_menuBgSprite, _font.get(), &_menuInputs,
-	                           std::bind(&MainState::closeMenu, this)));
+	                           closeMenuFunc()));
 	_spellMenu.reset(new Menu(&_menuBgSprite, _font.get(), &_menuInputs,
-	                          std::bind(&MainState::closeMenu, this)));
+	                          closeMenuFunc()));
 	_summonMenu.reset(new Menu(&_menuBgSprite, _font.get(), &_menuInputs,
-	                           std::bind(&MainState::closeMenu, this)));
+	                           closeMenuFunc()));
+	_pcMenu.reset(new Menu(&_menuBgSprite, _font.get(), &_menuInputs,
+	                       closeMenuFunc()));
 
-	_mainMenu->addEntry("Attack");
+	_mainMenu->addEntry("Attack", Menu::ENABLED,
+	                    openMenuFunc(_pcMenu.get(), _mainMenu.get(), 0));
 	_mainMenu->addEntry("Switch", Menu::ENABLED,
-	                    std::bind(&MainState::openMenu, this, _switchMenu.get()));
+	                    openMenuFunc(_switchMenu.get(), _mainMenu.get(), 1));
 	_mainMenu->addEntry("Spell", Menu::ENABLED,
-	                    std::bind(&MainState::openMenu, this, _spellMenu.get()));
+	                    openMenuFunc(_spellMenu.get(),  _mainMenu.get(), 2));
 	_mainMenu->addEntry("Summon", Menu::ENABLED,
-	                    std::bind(&MainState::openMenu, this, _summonMenu.get()));
+	                    openMenuFunc(_summonMenu.get(), _mainMenu.get(), 3));
 	_mainMenu->addEntry("Scan");
 	_mainMenu->addEntry("QTE",     Menu::HIDDEN);
 	_mainMenu->addEntry("Twist 1", Menu::HIDDEN);
 	_mainMenu->layout();
 	_mainMenu->show(Vector3(0, 0, 0));
 
-	_switchMenu->addEntry("None");
-	_switchMenu->addEntry("Fire");
-	_switchMenu->addEntry("Ice");
-	_switchMenu->addEntry("Thunder");
-	_switchMenu->addEntry("Acid");
+	_switchMenu->addEntry("None", Menu::ENABLED, doActionFunc());
+	_switchMenu->addEntry("Fire", Menu::ENABLED, doActionFunc());
+	_switchMenu->addEntry("Ice", Menu::ENABLED, doActionFunc());
+	_switchMenu->addEntry("Thunder", Menu::ENABLED, doActionFunc());
+	_switchMenu->addEntry("Acid", Menu::ENABLED, doActionFunc());
 	_switchMenu->layout();
 	_switchMenu->show(Vector3(_mainMenu->width(), 16, .1));
 
-	_spellMenu->addEntry("Storm");
-	_spellMenu->addEntry("Strike");
-	_spellMenu->addEntry("Crippling strike");
-	_spellMenu->addEntry("Soul drain");
-	_spellMenu->addEntry("Vorpal sword");
-	_spellMenu->addEntry("Mud pit");
-	_spellMenu->addEntry("Dispel magic");
+	_spellMenu->addEntry("Storm", Menu::ENABLED, doActionFunc());
+	_spellMenu->addEntry("Strike", Menu::ENABLED,
+	                     openMenuFunc(_pcMenu.get(), _spellMenu.get(), 1));
+	_spellMenu->addEntry("Crippling strike", Menu::ENABLED,
+	                     openMenuFunc(_pcMenu.get(), _spellMenu.get(), 2));
+	_spellMenu->addEntry("Soul drain", Menu::ENABLED,
+	                     openMenuFunc(_pcMenu.get(), _spellMenu.get(), 3));
+	_spellMenu->addEntry("Vorpal sword", Menu::ENABLED,
+	                     openMenuFunc(_pcMenu.get(), _spellMenu.get(), 4));
+	_spellMenu->addEntry("Mud pit", Menu::ENABLED, doActionFunc());
+	_spellMenu->addEntry("Dispel magic", Menu::ENABLED,
+	                     openMenuFunc(_pcMenu.get(), _spellMenu.get(), 6));
 	_spellMenu->layout();
 	_spellMenu->show(Vector3(_mainMenu->width(), 16, .1));
 
-	_summonMenu->addEntry("Sprites");
-	_summonMenu->addEntry("Tomberry");
-	_summonMenu->addEntry("Mageling");
+	_summonMenu->addEntry("Sprites", Menu::ENABLED, doActionFunc());
+	_summonMenu->addEntry("Tomberry", Menu::ENABLED, doActionFunc());
+	_summonMenu->addEntry("Mageling", Menu::ENABLED, doActionFunc());
 	_summonMenu->layout();
 	_summonMenu->show(Vector3(_mainMenu->width(), 16, .1));
 
-	openMenu(_mainMenu.get());
+	_pcMenu->addEntry(_pcName[0], Menu::ENABLED, doActionFunc());
+	_pcMenu->addEntry(_pcName[1], Menu::ENABLED, doActionFunc());
+	_pcMenu->addEntry(_pcName[2], Menu::ENABLED, doActionFunc());
+	_pcMenu->addEntry(_pcName[3], Menu::ENABLED, doActionFunc());
+	_pcMenu->layout();
+	_pcMenu->show(Vector3(_mainMenu->width(), 16, .2));
 
 	_initialized = true;
 }
@@ -196,12 +220,6 @@ void MainState::shutdown() {
 void MainState::run() {
 	lairAssert(_initialized);
 
-	//TODO: Provide ruleset.
-	Rules rules(_game->log(), "");
-	Player p = {{0}, {0}, {0}, 0, {0}, {0}};
-	Fight fight(_game->log(), rules, p);
-	unsigned target = 0;
-
 	_running = true;
 
 	init();
@@ -213,14 +231,6 @@ void MainState::run() {
 	while(_running) {
 		switch(_loop.nextEvent()) {
 		case InterpLoop::Tick:
-			if (!fight.game_over() && fight.tick_fight())
-			{
-				while(fight.party[target].hp == 0)
-					target = (target+1)%rules.party_size;
-				
-				//log().log("Punching good guy ", target, ".");
-				fight.curse(PUNCH, target);
-			}
 			updateTick();
 			break;
 		case InterpLoop::Frame:
@@ -265,6 +275,47 @@ EntityRef MainState::createSprite(Sprite* sprite, const Vector3& pos,
 }
 
 
+EntityRef MainState::createText(const std::string& text, const Vector3& pos,
+                                      const Vector4& color) {
+	EntityRef entity = _entities.createEntity(_entities.root(), "text");
+	_texts.addComponent(entity);
+	TextComponent* comp = _texts.get(entity);
+	comp->font = _font.get();
+	comp->text = text;
+	comp->color = color;
+	Transform t = Transform::Identity();
+	t.translate(pos);
+	entity.setTransform(t);
+	return entity;
+}
+
+
+EntityRef MainState::createDamageText(const std::string& text, const Vector3& pos,
+                                      const Vector4& color) {
+	return createText(text, pos, color);
+}
+
+
+EntityRef MainState::createHealthBar(const Vector3& pos, float size) {
+	EntityRef parent = _entities.createEntity(_entities.root());
+	parent.setTransform(Transform(Translation(pos)));
+
+	Box2 view(Vector2(0, 0), Vector2(size, 1));
+	EntityRef empty = _entities.createEntity(parent, "healthEmpty");
+	_sprites.addComponent(empty);
+	empty.sprite()->setSprite(&_healthEmptySprite);
+	empty.sprite()->setView(view);
+
+	EntityRef full = _entities.createEntity(parent, "healthFull");
+	_sprites.addComponent(full);
+	full.sprite()->setSprite(&_healthFullSprite);
+	full.sprite()->setView(view);
+	full.setTransform(Transform(Translation(Vector3(0, 0, 0.01))));
+
+	return full;
+}
+
+
 void MainState::init() {
 	log().log("Initialize main state.");
 
@@ -275,36 +326,35 @@ void MainState::init() {
 	               Vector3(0, _camera.viewBox().max().y() - 480, -.99))));
 
 
-	_warriorHealthEmpty = _entities.createEntity(_entities.root(), "warriorHealthEmpty");
-	_sprites.addComponent(_warriorHealthEmpty);
-	_warriorHealthEmpty.sprite()->setSprite(&_healthEmptySprite);
-	_warriorHealthEmpty.setTransform(Transform(Translation(
-	               Vector3(20, _camera.viewBox().max().y() - 20, -.10))));
+	_boss = createSprite(&_boss1Sprite,
+	                     Vector3(240, _camera.viewBox().max().y() - 240, -.815),
+	                     Vector2(-1, 1), "Boss");
 
-	_warriorHealthFull = _entities.createEntity(_entities.root(), "warriorHealthFull");
-	_sprites.addComponent(_warriorHealthFull);
-	_warriorHealthFull.sprite()->setSprite(&_healthFullSprite);
-	_warriorHealthFull.setTransform(Transform(Translation(
-	               Vector3(20, _camera.viewBox().max().y() - 20, -.05))));
-	_warriorHealthFull.sprite()->setView(Box2(Vector2(0, 0), Vector2(.66, 1)));
-
+	Vector3 bhpPos(10, _camera.viewBox().max().y() - 22, 0);
+	Vector3 bhpOffset(0, -22, 0);
+	for(unsigned i = 0; i < 3; ++i) {
+		_bossHealthFull[i] = createHealthBar(bhpPos + i * bhpOffset, 1);
+	}
 
 	Vector3 closestPos(_camera.viewBox().max().x() - 30,
-	                   _camera.viewBox().max().y() - 260, -.8);
-	Vector3 offset(-50, 18, -.01);
+	                   _camera.viewBox().max().y() - 240, -.8);
+	Vector3 offset(-50, 14, -.01);
 
-	_boss      = createSprite(&_boss1Sprite,
-	                          Vector3(240, _camera.viewBox().max().y() - 240, -.815),
-	                          Vector2(-1, 1), "ninja");
+	Vector3 namePos(300, 94, -0.01);
+	Vector3 nameOffset(0, -24, 0);
+	Vector3 hpPos = namePos + Vector3(110, -8, 0);
 
-	_warrior   = createSprite(&_warriorSprite, closestPos + 0 * offset,
-	                        Vector2(-1, 1), "warrior");
-	_blackMage = createSprite(&_blackMageSprite, closestPos + 1 * offset,
-	                        Vector2(-1, 1), "blackMage");
-	_whiteMage = createSprite(&_whiteMageSprite, closestPos + 2 * offset,
-	                        Vector2(-1, 1), "whiteMage");
-	_ninja     = createSprite(&_ninjaSprite, closestPos + 3 * offset,
-	                        Vector2(-1, 1), "ninja");
+	_maxPcHp = 0;
+	for(PC& pc: _fight.party) {
+		_maxPcHp = std::max(_maxPcHp, pc.hp);
+	}
+	for(unsigned pc = 0; pc < 4; ++pc) {
+		_pc[pc] = createSprite(&_pcSprite[pc], closestPos + pc * offset,
+		                       Vector2(-1, 1), _pcName[pc].c_str());
+		createText(_pcName[pc], namePos + pc * nameOffset);
+		_pcHealthFull[pc] = createHealthBar(hpPos + pc * nameOffset,
+		                                    float(_fight.party[pc].hp) / _maxPcHp);
+	}
 
 //	EntityRef test = _entities.createEntity(_entities.root(), "test");
 //	_sprites.addComponent(test);
@@ -317,7 +367,28 @@ void MainState::init() {
 
 
 void MainState::updateTick() {
+	if(_state == PLAYING
+	&& (_loop.tickCount() % 30) == 0) { // 2 turns per second
+		log().warning("Turn");
+		if(_fight.game_over()) {
+			_state = GAME_OVER;
+		} else if(_fight.tick_fight()) {
+			_state = BOSS_TURN;
+			for(unsigned i = 0; i < 4; ++i) {
+				if(_fight.can_haz(PUNCH, i)) {
+					_pcMenu->enableEntry(i);
+				} else {
+					_pcMenu->disableEntry(i);
+				}
+			}
+			openMenu(_mainMenu.get());
+		}
 
+		for(unsigned pc = 0; pc < 4; ++pc) {
+			_pcHealthFull[pc].sprite()->setView(
+			            Box2(Vector2(0, 0), Vector2(float(_fight.party[pc].hp) / _maxPcHp, 1)));
+		}
+	}
 }
 
 
@@ -338,6 +409,9 @@ void MainState::updateFrame() {
 
 	_entities.updateWorldTransform();
 	_sprites.render(_loop.frameInterp(), _camera);
+	_texts.render(  _loop.frameInterp(), _game->renderer());
+
+	_statusFrame->render(_game->renderer());
 
 	if(_messages.empty()) {
 		for(Menu* menu: _menuStack) {
@@ -399,8 +473,20 @@ void MainState::layoutMessage() {
 }
 
 
-void MainState::openMenu(Menu* menu) {
+void MainState::openMenu(Menu* menu, Menu* parent, unsigned entry) {
+	if(parent) {
+		menu->_frame.position.head<2>() = parent->_frame.position.head<2>()
+		                                + parent->_frame.size;
+		menu->_frame.position.y() -=
+		        menu->height() + _font->height() * entry;
+		menu->_frame.position.y() = std::max(menu->_frame.position.y(), 0.f);
+	}
 	_menuStack.push_back(menu);
+}
+
+
+Menu::Callback MainState::openMenuFunc(Menu* menu, Menu* parent, unsigned entry) {
+	return std::bind(&MainState::openMenu, this, menu, parent, entry);
 }
 
 
@@ -409,6 +495,38 @@ void MainState::closeMenu() {
 }
 
 
+Menu::Callback MainState::closeMenuFunc() {
+	return std::bind(&MainState::closeMenu, this);
+}
+
+
 Logger& MainState::log() {
 	return _game->log();
+}
+
+
+void MainState::doAction() {
+	lairAssert(!_menuStack.empty());
+	switch(_menuStack[0]->selected()) {
+	case 0: { // attack
+		_fight.curse(PUNCH, _menuStack.back()->selected());
+		break;
+	}
+	case 1: { // spell
+		break;
+	}
+	case 2: { // summon
+		break;
+	}
+	}
+
+	_state = PLAYING;
+	while(!_menuStack.empty()) {
+		closeMenu();
+	}
+}
+
+
+Menu::Callback MainState::doActionFunc() {
+	return std::bind(&MainState::doAction, this);
 }

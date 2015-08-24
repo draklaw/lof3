@@ -45,7 +45,7 @@ Rules::Rules(Logger& logger, const string& ruleset)
 	max_summons(5),
 	party_size(4)
 {
-	log().setLevel(LogLevel::Warning);
+	//log().setLevel(LogLevel::Warning);
 }
 
 Rules::~Rules()
