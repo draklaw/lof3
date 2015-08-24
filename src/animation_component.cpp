@@ -259,14 +259,6 @@ AnimationComponent::AnimationComponent(_Entity* entity,
 }
 
 
-AnimationComponent::AnimationComponent(const AnimationComponent& other)
-    : Component(other._entityPtr),
-      anim(other.anim->clone()),
-      time(other.time),
-      _manager(other._manager) {
-}
-
-
 AnimationComponent::AnimationComponent(AnimationComponent&& other)
     : Component(other._entityPtr),
       anim(other.anim),
@@ -322,8 +314,12 @@ void AnimationComponentManager::cloneComponent(EntityRef base, EntityRef entity)
 
 
 void AnimationComponentManager::update(uint64 etime) {
+	_collectGarbages();
 	for(auto& entityComp: *this) {
 		AnimationComponent& comp = entityComp.second;
+		if(!comp._alive) {
+			continue;
+		}
 		if(comp.anim) {
 			if(comp.time == 0) {
 				comp.anim->updateLength();

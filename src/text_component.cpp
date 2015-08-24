@@ -59,8 +59,12 @@ void TextComponentManager::cloneComponent(EntityRef base, EntityRef entity) {
 
 
 void TextComponentManager::render(float interp, Renderer* renderer) {
+	_collectGarbages();
 	for(auto& entityComp: *this) {
 		TextComponent& comp = entityComp.second;
+		if(!comp._alive) {
+			continue;
+		}
 		if(comp.font) {
 			Matrix4 wt = lerp(interp,
 			                  comp._entity()->prevWorldTransform.matrix(),
