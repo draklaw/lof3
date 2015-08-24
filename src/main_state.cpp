@@ -340,7 +340,7 @@ EntityRef MainState::createHealthBar(const Vector3& pos, float size) {
 void MainState::init() {
 	log().log("Initialize main state.");
 
-	_fight.reset(new Fight(log(), _rules, _player));
+	_fight.reset(new Fight(log(), _rules, _player, 150));
 
 	_bg = _entities.createEntity(_entities.root(), "bg");
 	_sprites.addComponent(_bg);

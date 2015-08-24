@@ -54,7 +54,7 @@ public:
 	Target boss_target;
 
 	// Engage a fresh fight with player p.
-	Fight(Logger& logger, Rules& r, Player& p);
+	Fight(Logger& logger, Rules& r, Player& p, unsigned lvl);
 	~Fight();
 
 	// Returns true iff the boss has to play now.

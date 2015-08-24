@@ -34,11 +34,8 @@ void parseUnsigned(unsigned& value, const Json::Value& json) {
 
 Rules::Rules(Logger& logger, const string& ruleset)
 :	_logger(&logger),
-	bab{3,1,1,5},
 	hd{30,15,10,20},
-	mp{},
-	unlocks{},
-	powerup{1,0},
+	mp{5,30,25,15},
 	init{4,5,5,3},
 	boss_hp{5000,3500,1000},
 	boss_init(2),
@@ -49,6 +46,8 @@ Rules::Rules(Logger& logger, const string& ruleset)
 	spell_utility{},
 	spell_cooldown{},
 	spell_manacost{},
+	powerup{1,0},
+	unlocks{},
 	curse_power{20,0},
 	curse_utility{},
 	curse_cooldown{},
@@ -56,7 +55,7 @@ Rules::Rules(Logger& logger, const string& ruleset)
 	max_summons(5),
 	party_size(4)
 {
-	//log().setLevel(LogLevel::Warning);
+	log().setLevel(LogLevel::Info);
 }
 
 Rules::~Rules()
@@ -95,35 +94,39 @@ void Rules::setFromJson(const Json::Value& json) {
 	if(spells.isObject()) {
 		setSpellFromJson(AA,              spells["attack"]);
 
-		setSpellFromJson(SMITE,           spells["attack_spell"]);
-		setSpellFromJson(SLICE,           spells["attack_spell"]);
-		setSpellFromJson(NUKES,           spells["attack_spell"]);
+		setSpellFromJson(SMITE,           spells["smite"]);
+
+		setSpellFromJson(SLICE,           spells["slice"]);
+		setSpellFromJson(SWIPE,           spells["swipe"]);
 
 		setSpellFromJson(PROTECT,         spells["protect"]);
 
 		setSpellFromJson(HEAL,            spells["heal"]);
-
 		setSpellFromJson(NURSE,           spells["nurse"]);
-
 		setSpellFromJson(REZ,             spells["rez"]);
 
-		setSpellFromJson(SWIPE,           spells["aoe"]);
+		setSpellFromJson(NUKES + NONE,  spells["nuke"]);
+		setSpellFromJson(NUKES + FIRE,  spells["nuke_elem"]);
+		setSpellFromJson(NUKES + ICE,   spells["nuke_elem"]);
+		setSpellFromJson(NUKES + SPARK, spells["nuke_elem"]);
+		setSpellFromJson(NUKES + ACID,  spells["nuke_elem"]);
+
 		setSpellFromJson(Spell(AOES + NONE),     spells["aoe"]);
-		setSpellFromJson(Spell(AOES + FIRE),     spells["aoe"]);
-		setSpellFromJson(Spell(AOES + ICE),      spells["aoe"]);
-		setSpellFromJson(Spell(AOES + SPARK),    spells["aoe"]);
-		setSpellFromJson(Spell(AOES + ACID),     spells["aoe"]);
+		setSpellFromJson(Spell(AOES + FIRE),     spells["aoe_elem"]);
+		setSpellFromJson(Spell(AOES + ICE),      spells["aoe_elem"]);
+		setSpellFromJson(Spell(AOES + SPARK),    spells["aoe_elem"]);
+		setSpellFromJson(Spell(AOES + ACID),     spells["aoe_elem"]);
 
 		setSpellFromJson(Spell(SHIELDS + NONE),  spells["shield"]);
-		setSpellFromJson(Spell(SHIELDS + FIRE),  spells["shield"]);
-		setSpellFromJson(Spell(SHIELDS + ICE),   spells["shield"]);
-		setSpellFromJson(Spell(SHIELDS + SPARK), spells["shield"]);
-		setSpellFromJson(Spell(SHIELDS + ACID),  spells["shield"]);
+		setSpellFromJson(Spell(SHIELDS + FIRE),  spells["shield_elem"]);
+		setSpellFromJson(Spell(SHIELDS + ICE),   spells["shield_elem"]);
+		setSpellFromJson(Spell(SHIELDS + SPARK), spells["shield_elem"]);
+		setSpellFromJson(Spell(SHIELDS + ACID),  spells["shield_elem"]);
 	}
 
 	const Json::Value& curses = json["curses"];
 	if(curses.isObject()) {
-		setCurseFromJson(PUNCH,   curses["attack"]);
+		setCurseFromJson(PUNCH,   curses["punch"]);
 		setCurseFromJson(STORM,   curses["storm"]);
 		setCurseFromJson(STRIKE,  curses["strike"]);
 		setCurseFromJson(VORPAL,  curses["vorpal"]);
@@ -131,8 +134,19 @@ void Rules::setFromJson(const Json::Value& json) {
 		setCurseFromJson(DRAIN,   curses["drain"]);
 		setCurseFromJson(MUD,     curses["mud"]);
 		setCurseFromJson(DISPEL,  curses["dispel"]);
+
+		setCurseFromJson(Curse(SUMMON + SPRITES),  curses["sprites"]);
+		setCurseFromJson(Curse(SUMMON + TOMBERRY),  curses["tomberry"]);
+		setCurseFromJson(Curse(SUMMON + MAGELING),  curses["mageling"]);
 	}
 }
+
+/* Baseline :
+Loser PC (20) :     400 HP,  400 MP, +  20x spells, AA  40, Heal 150
+Killer PC (100) :  2000 HP, 2000 MP, + 100x spells, AA 120, Heal 550
+Monster PC (200) : 4000 HP, 4000 MP, + 200x spells, AA 220, Heal 1050
+
+ */
 
 
 void Rules::setJobFromJson(Job job, const Json::Value& json) {
@@ -140,8 +154,8 @@ void Rules::setJobFromJson(Job job, const Json::Value& json) {
 		return;
 	}
 
-	parseUnsigned(hd[job],   json["health"]);
-	parseUnsigned(mp[job],   json["mana"]);
+	parseUnsigned(hd[job],   json["hit_dice"]);
+	parseUnsigned(mp[job],   json["mana_pool"]);
 	parseUnsigned(init[job], json["init"]);
 }
 
@@ -198,6 +212,12 @@ double Rules::elem_factor (Element attack, Element defense)
 
 	// No match in elemental defense.
 	return elem_multiplier[0];
+}
+
+unsigned Rules::spellpower (Spell s, const PC& u)
+{
+	log().info("Spell power of ",s," for ",u.job," is ",spell_power[s] + powerup[s] * u.xp,".");
+	return spell_power[s] + powerup[s] * u.xp;
 }
 
 unsigned Rules::max_hp (PC c)
