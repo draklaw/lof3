@@ -28,6 +28,8 @@
 #include "main_state.h"
 
 
+#define ONE_SEC (1000000000)
+
 MainState::MainState(Game* game)
 	: _game(game),
 
@@ -132,6 +134,10 @@ void MainState::initialize() {
 	_pcSprite[1]       = loadSprite("MN.png");
 	_pcSprite[2]       = loadSprite("MB.png");
 	_pcSprite[3]       = loadSprite("Ninja.png");
+
+
+	_damageAnim.reset(new MoveAnim(ONE_SEC/4, Vector3(0, 20, 0), RELATIVE));
+	_damageAnim->onEnd = [this](_Entity* e){ _entities.destroyEntity(EntityRef(e)); };
 
 
 	_statusFrame.reset(new Frame(&_menuBgSprite, Vector2(640, 120)));
@@ -292,7 +298,11 @@ EntityRef MainState::createText(const std::string& text, const Vector3& pos,
 
 EntityRef MainState::createDamageText(const std::string& text, const Vector3& pos,
                                       const Vector4& color) {
-	return createText(text, pos, color);
+	EntityRef entity = createText(text, pos, color);
+	_anims.addComponent(entity);
+	AnimationComponent* comp = _anims.get(entity);
+	comp->anim = _damageAnim->clone();
+	return entity;
 }
 
 
@@ -397,6 +407,7 @@ void MainState::updateFrame() {
 	if(!_messages.empty()) {
 		if(_menuInputs.ok->justPressed()
 		|| _menuInputs.cancel->justPressed()) {
+			createDamageText("!!! TEST !!!", Vector3(200, 200, .999), Vector4(1, .5, 0, 1));
 			nextMessage();
 		}
 	} else if(!_menuStack.empty()) {
@@ -410,6 +421,7 @@ void MainState::updateFrame() {
 	_entities.updateWorldTransform();
 	_sprites.render(_loop.frameInterp(), _camera);
 	_texts.render(  _loop.frameInterp(), _game->renderer());
+	_anims.update(_loop.tickDuration());
 
 	_statusFrame->render(_game->renderer());
 

@@ -40,6 +40,7 @@
 
 #include "menu.h"
 #include "text_component.h"
+#include "animation_component.h"
 #include "rules.h"
 #include "fight.h"
 
@@ -129,10 +130,11 @@ protected:
 protected:
 	Game* _game;
 
-	EntityManager          _entities;
-	SpriteComponentManager _sprites;
-	TextComponentManager   _texts;
-	InputManager           _inputs;
+	EntityManager             _entities;
+	SpriteComponentManager    _sprites;
+	TextComponentManager      _texts;
+	AnimationComponentManager _anims;
+	InputManager              _inputs;
 
 	SlotTracker _slotTracker;
 
@@ -163,6 +165,9 @@ protected:
 	Sprite      _menuBgSprite;
 	Sprite      _boss1Sprite;
 	Sprite      _pcSprite[4];
+
+	std::unique_ptr<Animation>
+	            _damageAnim;
 
 	EntityRef   _bg;
 
