@@ -70,14 +70,31 @@ public:
 	bool can_haz (Curse c, Target t);
 	// As the boss, use curse c on target t.
 	void curse (Curse c, Target t);
+
+private:
+	// Play as one of the PCs.
+	void play_party (Target character);
+
+	// Can user use ability s on target t ?
+	bool can_do (Target user, Spell s, Target t);
 	// As user, use ability s on target t.
 	void play (Target user, Spell s, Target t);
 	// As one of the PCs, use item i on target t.
 	void use (Item i, Target t);
 
-private:
-	// Play as one of the PCs.
-	void play_party (Target character);
+	// What it says on the tin.
+	unsigned count_strategic_targets();
+	unsigned count_weak_targets ();
+	// Pick a bad guy to hit.
+	Target pick_target();
+	// Find a weak ally to help.
+	Target find_weak();
+	// Pick an element to strike target t with.
+	Element pick_elem (Target t);
+
+	// Roll the dice !
+	unsigned rtd (unsigned max);
+	unsigned rtd ();
 
 	// Inflict amount damage with element e to target t.
 	void damage (Target t, unsigned amount, Element e);

@@ -32,7 +32,7 @@
 Game::Game()
     : _mlogger(),
       _logBackend(std::cerr, true),
-      _logger("game", &_mlogger, DEFAULT_LOG_LEVEL),
+      _logger("game", &_mlogger, LogLevel::Log),
 
       _dataPath(),
 

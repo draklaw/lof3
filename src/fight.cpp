@@ -119,7 +119,8 @@ bool Fight::game_over ()
 
 double Fight::boss_hp_rate()
 {
-	return double(boss.hp) / rules.boss_hp[tier];
+	return double( boss.hp - (tier==NB_TIERS-1) ? 0 : rules.boss_hp[tier+1] )
+	     / rules.boss_hp[tier];
 }
 
 bool Fight::can_haz (Curse c)
@@ -226,12 +227,12 @@ void Fight::curse (Curse c, Target t)
 			break;
 		case VORPAL:
 			damage(t, rules.curse_power[c], NONE);
-			if ((unsigned) rand()%100 < rules.curse_utility[c])
+			if ((unsigned) rtd() < rules.curse_utility[c])
 				damage(t, (unsigned) -1, NONE);
 			break;
 		case CRIPPLE:
 			damage(t, rules.curse_power[c], NONE);
-			if ((unsigned) rand()%100 < rules.curse_utility[c])
+			if ((unsigned) rtd() < rules.curse_utility[c])
 				control(t, DISABLE);
 			break;
 		case DRAIN:
@@ -240,7 +241,7 @@ void Fight::curse (Curse c, Target t)
 				party[t].mp -= drain;
 			else
 				party[t].mp = 0;
-			if ((unsigned) rand()%100 < rules.curse_utility[c])
+			if ((unsigned) rtd() < rules.curse_utility[c])
 				control(t, SILENCE);
 			break;
 		case MUD:
@@ -295,22 +296,19 @@ void Fight::play (Target user, Spell s, Target t)
 			if (t < boss_target)
 			{
 				party[t].hp += rules.spell_power[s];
-				//TODO: Forbid overhealing.
-				//party[t].hp = max(party[t].hp, rules.max_hp(party[t]));
+				party[t].hp = min(party[t].hp, rules.max_hp(party[t]));
 			}
 			break;
 		case NURSE:
 			for (unsigned i = 0 ; i < rules.party_size ; i++)
 			{
 				party[i].hp += rules.spell_power[s];
-				//TODO: Forbid overhealing.
-				//party[i].hp = max(party[i].hp, rules.max_hp(party[i]));
+				party[i].hp = min(party[i].hp, rules.max_hp(party[i]));
 			}
 			break;
 		case REZ:
 			if (party[t].hp == 0)
-				party[t].hp = 50;
-				//FIXME: party[i].hp = rules.max_hp(party[i]) / 4;
+				party[t].hp = rules.max_hp(party[t]) / 4;
 			break;
 		case NUKES:
 		case NUKES + FIRE:
@@ -355,69 +353,214 @@ void Fight::play (Target user, Spell s, Target t)
 	}
 }
 
+#define ALIVE_CONF 50.0
+#define SLOW_CONF 0.9
+#define DISABLE_CONF 0.8
+#define SILENCE_CONF 0.8
+
+#define AOE_THRESHOLD 2
+#define NURSE_THRESHOLD 2
+
+#define NOTARGET (Target) -1
+
+#define _Spell(x) (Spell(x))
+#define _Elem(x) (Element(x))
+
 void Fight::play_party (Target character)
 {
 	Target c = character;
 
-	// Attak the boss.
-	log().info("Player ", c, " says : \"I smite thee, evil one !\"");
-	play(c, AA, boss_target);
+	Element e = NONE;
+	Target t = pick_target(), w = find_weak(), d = boss_target;
+	unsigned nbt = count_strategic_targets(), nbw = count_weak_targets();
 
-/* AI decision tree :
-- Assess trouble (1-100) and roll for panic against it.
+	// Each %HP left on a character gives 1 confidence
+	// Confidence is reduced linearly by each status effect
+	// Being alive gives additional confidence
+	//FIXME: Worry about silence/disable does not take job into account.
+	unsigned confidence = 0, max_confidence = 0;
+	for (unsigned i = 0 ; i < rules.party_size ; i++)
+	{
+		max_confidence += ALIVE_CONF + 100;
+		if (!party[i].hp)
+			d = i;
+		else
+			confidence += ALIVE_CONF + 100.0 * party[i].hp / rules.max_hp(party[i]);
+	}
 
-> Improvise (if panicking)
-- List all available actions, pick one.
-- List all available targets, pick one.
-- Do that.
-(- Learn.)
+	//TODO: Cache confidence and stratcount in the fight/player.
+	unsigned known_strats = 0;
+	for (unsigned i = 0 ; i < NB_STRATS ; i++)
+		if (player.strat[i] != 0)
+			known_strats++;
 
-> Strategy (#lost fights x 20% chance)
-- Are spells enabled and not status'd ?
-+ NO : Generic AA.
+	if (rtd(max_confidence) > confidence)
+	{ // Panic !
+		//TODO: Improvise when panicking.
+		// - List all available actions, pick one.
+		// - List all available targets, pick one.
+		// - Do that.
+		// (- Learn.)
 
-+ YES: Who are you ?
+		// Attack the boss.
+		log().info("Player ", c, " says : \"I smite thee, evil one !\"");
+		play(c, AA, boss_target);
+	}
+	else if (rtd(NB_STRATS) < known_strats)
+	{ // Keep calm and use strategy.
+		if (player.strat[SPELLS] && !party[c].status[SILENCE])
+		{ // I put on my robe and wizard hat.
+			switch (party[c].job)
+			{
+				case FIGHTER:
+					// Protect the weakest, or smite a bad guy, or just punch one.
+					if (party[w].protector == rules.party_size && can_do(c, PROTECT, w))
+						play (c, PROTECT, w);
+					else if (can_do(c, SMITE, t))
+						play (c, SMITE, t);
+					else
+						play (c, AA, t);
+					break;
+				case NINJA:
+					// Cut them down to size or cut him in two, or just punch.
+					if (nbt > AOE_THRESHOLD && can_do(c, SWIPE, NOTARGET))
+						play (c, SWIPE, NOTARGET);
+					else if (can_do(c, SLICE, t))
+						play (c, SLICE, t);
+					else
+						play (c, AA, t);
+					break;
+				case HEALER:
+					// Raise dead, nurse, heal, clear status, raise elem shield or punch.
+					if (player.strat[RAISE_DEAD] && d < boss_target && can_do(c, REZ, d))
+						play (c, REZ, d);
+					else if (player.strat[HEAL_UP]
+					      && nbw > NURSE_THRESHOLD
+					      && can_do(c, NURSE, w))
+						play (c, NURSE, NOTARGET);
+					else if (player.strat[HEAL_UP]
+					      && party[w].hp < rules.max_hp(party[w])
+					      && can_do(c, HEAL, w))
+						play(c, HEAL, w);
+					/* else if (bad status)
+						clear status; */
+					//TODO: Improve shield targeting and element picking.
+					else if (player.strat[RAISE_SHIELD]
+					      && can_do(c, SHIELDS + (e = Element(rtd(NB_ELEMS))), w))
+						play(c, SHIELDS + e, w);
+					else
+						play (c, AA, t);
+					break;
+				case WIZARD:
+					if (nbt > AOE_THRESHOLD
+					 && can_do(c, AOES + (e = pick_elem(NOTARGET)), NOTARGET))
+						play (c, AOES + e, NOTARGET);
+					else if (can_do(c, AOES + (e = pick_elem(NOTARGET)), t))
+						play (c, AOES + e, t);
+					else
+						play (c, AA, t);
+					break;
+				default:
+					log().warning("Whatsisname ", c, "should get a job.");
+			}
+		}
+		else // Euh bah... j'auto-attack ?
+			play(c, AA, t);
+	}
+	else
+	{
+		// Do what you want 'cause a pirate is free.
+		//TODO: Enjoy the ride.
+		// - Sum all possible favors and roll against that.
+		// - Substract each favor in turn, and pick whatever reaches zero.
 
-++ Fighter :
--- Protect weak ?
--- Keep heal ?
--- Protect random if none protected.
--- Generic AA.
+		// Attack the boss.
+		log().info("Player ", c, " says : \"I smite thee, evil one !\"");
+		play(c, AA, boss_target);
+	}
+}
 
-++ Ninja :
--- How many strat priority targets (sprites/tombs/boss) ?
-+++ Many ? Swipe.
-+++ Few ? Generic Slice or AA.
+bool Fight::can_do (Target user, Spell s, Target t)
+{
+	log().log(user,s,t);
+	//TODO: Check mana.
+	//TODO: Check cooldown.
+	//TODO: Check silence.
 
-++ BM :
--- How many strat priority targets (sprites/tombs/boss) ?
-+++ Many ? AOE elem.
-+++ Few ? Nuke elem.
+	return true;
+}
 
-++ WM :
--- Raise dead ?
--- Heal up ?
--- Clear status ?
--- Raise shield ? (with Pick elem ?)
--- Generic AA.
+unsigned Fight::count_strategic_targets ()
+{
+	unsigned c = 1;
 
->> Generic AA/Slice :
--- Kill sprites ?
--- Kill tomberry ?
--- DPS run ?
--- Punch boss.
+	for (unsigned i = 0 ; i < horde.size() ; i++)
+		if ((player.strat[KILL_SPRITES] && horde[i].spawn == SPRITES)
+		 || (player.strat[KILL_TOMBERRY] && horde[i].spawn == TOMBERRY))
+			c++;
 
->> Elem AOE/Nuke :
--- Count targets for each elem if AOE.
--- Avoid elem ?
--- Pick elem ?
+	return c;
+}
 
+Target Fight::pick_target()
+{
+	//TODO: KILL_SPRITES, KILL_TOMBERRY, DPS_RUN or random
+	return boss_target;
+}
 
-> Enjoy (otherwise)
-- Sum all possible favors and roll against that.
-- Substract each favor in turn, and pick whatever reaches zero.
+#define HEALER_BIAS 0.5
 
-*/
+unsigned Fight::count_weak_targets ()
+{
+	unsigned wc = 0;
+
+	//TODO: Double check.
+	for (unsigned i = 0 ; i < rules.party_size ; i++)
+		if (party[i].hp < rules.max_hp(party[i]) / 2 )
+			wc++;
+
+	return wc;
+}
+
+Target Fight::find_weak ()
+{
+	unsigned w = rules.party_size;
+
+	//TODO: Bias towards squishies and bad status.
+	if (player.strat[PROTECT_WEAK])
+	{
+		unsigned lowest_hp = (unsigned) -1;
+		for (unsigned i = 0 ; i < rules.party_size ; i++)
+			if (party[i].hp
+			 && party[i].hp * (player.strat[KEEP_HEAL])?HEALER_BIAS:1.0 < lowest_hp)
+			{
+				lowest_hp = party[i].hp;
+				w = i;
+			}
+	}
+	else
+		w = rtd(rules.party_size);
+
+	return w;
+}
+
+Element Fight::pick_elem (Target t)
+{
+	log().log(t);
+	//TODO: AoE
+	//TODO: AVOID_ELEM, PICK_ELEM
+	return Element(rtd(NB_ELEMS));
+}
+
+unsigned Fight::rtd ()
+{
+	return (Element) rtd(100);
+}
+
+unsigned Fight::rtd (unsigned max)
+{
+	//TODO: Improve distribution.
+	return rand() % max;
 }
 
 void Fight::damage (Target t, unsigned amount, Element e)

@@ -199,3 +199,13 @@ double Rules::elem_factor (Element attack, Element defense)
 	// No match in elemental defense.
 	return elem_multiplier[0];
 }
+
+unsigned Rules::max_hp (PC c)
+{
+	return hd[c.job] * c.xp;
+}
+
+unsigned Rules::max_mp (PC c)
+{
+	return mp[c.job] * c.xp;
+}

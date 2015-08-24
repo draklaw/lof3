@@ -49,6 +49,11 @@ enum Status { NORMAL, SLOW, DISABLE, SILENCE, NB_STATUS };
 enum Spell { AA, SMITE, PROTECT, SLICE, SWIPE, HEAL, NURSE, REZ, NUKES,
 	AOES = NUKES+NB_ELEMS, SHIELDS = AOES+NB_ELEMS, NB_SPELLS = SHIELDS+NB_ELEMS
 };
+inline constexpr Spell operator+ (Spell s, Element e)
+{
+	return Spell((unsigned) s + (unsigned) e);
+}
+
 struct PC {
 	Job job;                      // Character class^H^H^H^H^Hjob
 	unsigned xp;                  // Level
@@ -73,6 +78,8 @@ struct Minion {
 enum Curse { PUNCH, SWITCH, SCAN, STORM, STRIKE, VORPAL, CRIPPLE, DRAIN, MUD,
 	DISPEL, SUMMON, NB_CURSES = SUMMON + NB_SPAWNS
 };
+inline constexpr Curse operator+ (Curse c, Spawn s)
+{ return Curse((unsigned) c + (unsigned) s); }
 enum Qte { EASY, MEDIUM, HARD, NB_QTES };
 struct Boss {
 	unsigned hp;                   // Health bar
@@ -90,7 +97,7 @@ enum Strat { SPELLS, AVOID_ELEM, PICK_ELEM, RAISE_DEAD, HEAL_UP, CLEAR_STATUS,
 struct Player {
 	unsigned inventory[NB_ITEMS];    // Party inventory
 	unsigned practice[NB_QTES];      // QTE "skill"
-	unsigned strats[NB_STRATS];      // Strats knowledge
+	unsigned strat[NB_STRATS];       // Strats knowledge
 	unsigned aa_favor;               // Fondness for auto-attacks
 	unsigned spell_favor[NB_SPELLS]; // Favorite spells
 	unsigned item_favor[NB_ITEMS];   // Favorite consumables
@@ -141,6 +148,10 @@ public:
 
 	// Return the efficiency factor of attacking defense with attack.
 	double elem_factor (Element attack, Element defense);
+
+	// Returns a stat cap for c.
+	unsigned max_hp (PC c);
+	unsigned max_mp (PC c);
 };
 
 #endif
