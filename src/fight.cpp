@@ -364,19 +364,58 @@ void Fight::play_party (Target character)
 	play(c, AA, boss_target);
 
 /* AI decision tree :
-- Assess trouble (1-100) and roll for panic
+- Assess trouble (1-100) and roll for panic against it.
+
 > Improvise (if panicking)
-- list all available actions, pick one
-- list all available targets, pick one
-- do that
-(- learn)
+- List all available actions, pick one.
+- List all available targets, pick one.
+- Do that.
+(- Learn.)
 
 > Strategy (#lost fights x 20% chance)
+- Are spells enabled and not status'd ?
++ NO : Generic AA.
+
++ YES: Who are you ?
+
+++ Fighter :
+-- Protect weak ?
+-- Keep heal ?
+-- Protect random if none protected.
+-- Generic AA.
+
+++ Ninja :
+-- How many strat priority targets (sprites/tombs/boss) ?
++++ Many ? Swipe.
++++ Few ? Generic Slice or AA.
+
+++ BM :
+-- How many strat priority targets (sprites/tombs/boss) ?
++++ Many ? AOE elem.
++++ Few ? Nuke elem.
+
+++ WM :
+-- Raise dead ?
+-- Heal up ?
+-- Clear status ?
+-- Raise shield ? (with Pick elem ?)
+-- Generic AA.
+
+>> Generic AA/Slice :
+-- Kill sprites ?
+-- Kill tomberry ?
+-- DPS run ?
+-- Punch boss.
+
+>> Elem AOE/Nuke :
+-- Count targets for each elem if AOE.
+-- Avoid elem ?
+-- Pick elem ?
 
 
 > Enjoy (otherwise)
--- Sum all possible favors and roll against that
--- substract each favor in turn, and pick whatever reaches zero
+- Sum all possible favors and roll against that.
+- Substract each favor in turn, and pick whatever reaches zero.
 
 */
 }

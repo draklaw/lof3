@@ -13,6 +13,7 @@
 * Actual damage : Avoid using the boss's current element.
 * Counter damage : Use the most efficient magic (or items ?) against the boss.
 * Counter defense : Raise shields matching the boss's current element.
+* Heal up : Use healing as needed.
 * Raise dead : If a PC is out, raise him ASAP (duh !).
 * Focus sprites : Quickly mop off anything that heals the boss.
 * Focus Tomberry : KEEP IT OFF ! MAKE IT GO AWAY !
