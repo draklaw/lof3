@@ -441,10 +441,6 @@ void MainState::init() {
 }
 
 
-void MainState::updateTick() {
-}
-
-
 void MainState::play () {
 	if(_state == PLAYING && _messages.empty()) {
 		log().warning("Turn");
@@ -455,16 +451,23 @@ void MainState::play () {
 			updateMenu();
 			openMenu(_mainMenu.get());
 		}
-
-		for(unsigned pc = 0; pc < 4; ++pc) {
-			_pcHealthFull[pc].sprite()->setView(
-			            Box2(Vector2(0, 0), Vector2(float(_fight->party[pc].hp) / _maxPcHp, 1)));
-		}
-
-		_bossHealthFull[_fight->tier].sprite()->setView(
-			            Box2(Vector2(0, 0), Vector2(_fight->boss_hp_rate(), 1)));
-
+		updateHealthBars();
 	}
+}
+
+
+void MainState::updateHealthBars() {
+	for(unsigned pc = 0; pc < 4; ++pc) {
+		_pcHealthFull[pc].sprite()->setView(
+		            Box2(Vector2(0, 0), Vector2(float(_fight->party[pc].hp) / _maxPcHp, 1)));
+	}
+
+	_bossHealthFull[_fight->tier].sprite()->setView(
+		            Box2(Vector2(0, 0), Vector2(_fight->boss_hp_rate(), 1)));
+}
+
+
+void MainState::updateTick() {
 }
 
 
@@ -703,6 +706,8 @@ void MainState::doAction() {
 		break;
 	}
 	}
+
+	updateHealthBars();
 
 	_state = PLAYING;
 	while(!_menuStack.empty()) {

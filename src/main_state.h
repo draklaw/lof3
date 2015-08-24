@@ -91,8 +91,10 @@ public:
 	EntityRef createHealthBar(const Vector3& pos, float size);
 	void init();
 
-	void updateTick();
 	void play();
+	void updateHealthBars();
+
+	void updateTick();
 	void updateFrame();
 
 	void showMessage(const std::string& message);
