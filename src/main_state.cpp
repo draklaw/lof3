@@ -298,9 +298,9 @@ void MainState::run() {
 				updateFrame();
 				break;
 			}
-		} while (_state != GAME_OVER);
+		} while (_state != GAME_OVER && _running);
 
-	} while (_fight->boss.hp);
+	} while (_fight->boss.hp && _running);
 	log().log("The mighty has fallen...");
 
 	log().log("Stopping main state...");
@@ -489,8 +489,17 @@ void MainState::updateHealthBars() {
 		            Box2(Vector2(0, 0), Vector2(float(_fight->party[pc].hp) / _maxPcHp, 1)));
 	}
 
+	float hpRate = _fight->boss_hp_rate();
+	if(hpRate > 1) hpRate = 0;
 	_bossHealthFull[_fight->tier].sprite()->setView(
-		            Box2(Vector2(0, 0), Vector2(_fight->boss_hp_rate(), 1)));
+		            Box2(Vector2(0, 0), Vector2(hpRate, 1)));
+	for(unsigned i = 0; i < _fight->tier; ++i) {
+		EntityRef e = _bossHealthFull[i].parent().firstChild();
+		while(e.isValid()) {
+			e.sprite()->setColor(Vector4(1, 1, 1, 0));
+			e = e.nextSibling();
+		}
+	}
 }
 
 
