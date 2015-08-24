@@ -41,6 +41,7 @@
 #include "menu.h"
 #include "text_component.h"
 #include "animation_component.h"
+#include "sound_player.h"
 #include "rules.h"
 #include "fight.h"
 
@@ -159,6 +160,12 @@ protected:
 	Json::Value _fontJson;
 	std::unique_ptr<Font>
 	            _font;
+
+	const Music* _music1;
+	const Music* _music2;
+	const Music* _music3;
+	const Music* _transition1;
+	const Music* _transition2;
 
 	Sprite      _bgSprite;
 	Sprite      _healthEmptySprite;

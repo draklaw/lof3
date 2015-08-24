@@ -60,6 +60,12 @@ MainState::MainState(Game* game)
       _fontJson(),
       _font(),
 
+      _music1(nullptr),
+      _music2(nullptr),
+      _music3(nullptr),
+      _transition1(nullptr),
+      _transition2(nullptr),
+
       _bgSprite(),
       _menuBgSprite(),
 
@@ -136,6 +142,11 @@ void MainState::initialize() {
 	_pcSprite[2]       = loadSprite("MB.png");
 	_pcSprite[3]       = loadSprite("Ninja.png");
 
+	_music1      = _game->audio()->loadMusic("music1.ogg");
+	_music1      = _game->audio()->loadMusic("music2.ogg");
+	_music1      = _game->audio()->loadMusic("music3.ogg");
+	_transition1 = _game->audio()->loadMusic("transition1.ogg");
+	_transition2 = _game->audio()->loadMusic("transition2.ogg");
 
 	_damageAnim.reset(new MoveAnim(ONE_SEC/4, Vector3(0, 20, 0), RELATIVE));
 	_damageAnim->onEnd = [this](_Entity* e){ _entities.destroyEntity(EntityRef(e)); };
