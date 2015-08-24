@@ -373,6 +373,7 @@ void AnimationComponentManager::update(uint64 etime) {
 				comp.anim->update(comp.time, comp._entity());
 			} else {
 				comp.anim->end(comp._entity());
+				comp.anim = nullptr;
 			}
 		}
 	}

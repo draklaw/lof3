@@ -153,3 +153,8 @@ void SoundPlayer::haltSound(int channel) {
 void SoundPlayer::haltMusic() {
 	Mix_HaltMusic();
 }
+
+
+void SoundPlayer::setMusicVolume(float volume) {
+	Mix_VolumeMusic(128 * volume);
+}

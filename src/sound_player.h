@@ -27,7 +27,7 @@
 
 
 #define SOUNDPLAYER_MAX_CHANNELS    32
-#define SOUNDPLAYER_DEFAULT_VOLUME  (MIX_MAX_VOLUME / 5)
+#define SOUNDPLAYER_DEFAULT_VOLUME  (MIX_MAX_VOLUME / 2)
 
 
 class Game;
@@ -73,6 +73,8 @@ public:
 
 	void haltSound(int channel);
 	void haltMusic();
+
+	void setMusicVolume(float volume);
 
 private:
 	typedef std::unordered_map<std::string, Sound> SoundMap;

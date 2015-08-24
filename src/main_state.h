@@ -185,6 +185,13 @@ public:
 	const Music* _transition1;
 	const Music* _transition2;
 
+	const Sound* _hitSound;
+	const Sound* _spellSound;
+	const Sound* _healSound;
+	const Sound* _pcDeathSound;
+	const Sound* _bossDeathSound;
+	const Sound* _victorySound;
+
 	Sprite      _bgSprite;
 	Sprite      _healthEmptySprite;
 	Sprite      _healthFullSprite;

@@ -117,7 +117,6 @@ void Game::initialize() {
 		log().error("Failed to initialize SDL_mixer backend");
 	}
 	Mix_AllocateChannels(SOUNDPLAYER_MAX_CHANNELS);
-	Mix_VolumeMusic(SOUNDPLAYER_DEFAULT_VOLUME);
 
 	_window = _sys->createWindow("lof3", 1280, 720);
 	//_window->setFullscreen(true);
@@ -129,6 +128,7 @@ void Game::initialize() {
 	_renderer = _renderModule->createRenderer();
 
 	_audio.reset(new SoundPlayer(this));
+	_audio->setMusicVolume(.2);
 
 	_mainState.reset(new MainState(this));
 	_mainState->initialize();

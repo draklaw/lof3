@@ -150,6 +150,13 @@ void MainState::initialize() {
 	_transition1 = _game->audio()->loadMusic((_game->dataPath() / "transition1.ogg").c_str());
 	_transition2 = _game->audio()->loadMusic((_game->dataPath() / "transition2.ogg").c_str());
 
+	_hitSound       = _game->audio()->loadSound((_game->dataPath() / "hit.ogg").c_str());
+	_spellSound     = _game->audio()->loadSound((_game->dataPath() / "spell.ogg").c_str());
+	_healSound      = _game->audio()->loadSound((_game->dataPath() / "heal.ogg").c_str());
+	_pcDeathSound   = _game->audio()->loadSound((_game->dataPath() / "death_pc.ogg").c_str());
+	_bossDeathSound = _game->audio()->loadSound((_game->dataPath() / "death_boss.ogg").c_str());
+	_victorySound   = _game->audio()->loadSound((_game->dataPath() / "boss_victory.ogg").c_str());
+
 	_damageAnim.reset(new MoveAnim(ONE_SEC/2, Vector3(0, 30, 0), RELATIVE));
 	_damageAnim->onEnd = [this](_Entity* e){ _entities.destroyEntity(EntityRef(e)); };
 

@@ -20,6 +20,8 @@
 
 #include "fight.h"
 
+#include "game.h"
+
 #include "main_state.h"
 
 // Dummy target
@@ -139,9 +141,11 @@ bool Fight::tick_fight ()
 			if(tier == 0) {
 				msg("You are somewhat irritated.");
 				_mainState._anims.get(_mainState._boss)->play(_mainState._boss0to1Anim.get());
+				_mainState._game->audio()->playMusic(_mainState._music2);
 			} else {
 				msg("You are REALLY PISSED OFF NOW !");
 				_mainState._anims.get(_mainState._boss)->play(_mainState._boss1to2Anim.get());
+				_mainState._game->audio()->playMusic(_mainState._music3);
 			}
 			tier++;
 		}
@@ -171,8 +175,10 @@ bool Fight::game_over ()
 		if (pc.hp != 0)
 			survivors = true;
 
-	if (!survivors)
+	if (!survivors) {
 		msg("Sadly, no trace of them was ever found.");
+		_mainState._game->audio()->playSound(_mainState._victorySound, 0);
+	}
 	return !survivors;
 }
 
@@ -304,6 +310,7 @@ void Fight::curse (Curse c, Target t)
 	{
 		case PUNCH:
 			damage(t, rules.curse_power[c], e);
+			_mainState._game->audio()->playSound(_mainState._hitSound, 0);
 			break;
 		case SWITCH:
 			boss.elem = Element(t);
@@ -314,19 +321,23 @@ void Fight::curse (Curse c, Target t)
 		case STORM:
 			for (unsigned i = 0 ; i < rules.party_size ; i++)
 				damage(i, rules.curse_power[c], e);
+			_mainState._game->audio()->playSound(_mainState._spellSound, 0);
 			break;
 		case STRIKE:
 			damage(t, rules.curse_power[c], e);
+			_mainState._game->audio()->playSound(_mainState._spellSound, 0);
 			break;
 		case VORPAL:
 			damage(t, rules.curse_power[c], NONE);
 			if (rtd() < rules.curse_utility[c])
 				damage(t, (unsigned) -1, NONE);
+			_mainState._game->audio()->playSound(_mainState._spellSound, 0);
 			break;
 		case CRIPPLE:
 			damage(t, rules.curse_power[c], NONE);
 			if (rtd() < rules.curse_utility[c])
 				control(t, DISABLE);
+			_mainState._game->audio()->playSound(_mainState._spellSound, 0);
 			break;
 		case DRAIN:
 			drain = rules.curse_power[c];
@@ -336,16 +347,19 @@ void Fight::curse (Curse c, Target t)
 				party[t].mp = 0;
 			if (rtd() < rules.curse_utility[c])
 				control(t, SILENCE);
+			_mainState._game->audio()->playSound(_mainState._spellSound, 0);
 			break;
 		case MUD:
 			for (unsigned i = 0 ; i < rules.party_size ; i++)
 				if (rtd() < rules.curse_utility[c])
 					control(i, SLOW);
+			_mainState._game->audio()->playSound(_mainState._spellSound, 0);
 			break;
 		case DISPEL:
 			//TODO: Set resistance at what the party[t].equip provides.
 			for (unsigned elem = 0 ; elem < NB_ELEMS ; elem++)
 				party[t].resist[Element(elem)] = 0;
+			_mainState._game->audio()->playSound(_mainState._healSound, 0);
 			break;
 		case SUMMON+SPRITES:
 		case SUMMON+MAGELING:
@@ -554,18 +568,22 @@ void Fight::play (Target user, Spell s, Target t)
 		case AA:
 			//TODO: Add elemental damage for enchanted weapons.
 			damage(boss_target, rules.spellpower(s, party[user]), NONE);
+			_mainState._game->audio()->playSound(_mainState._hitSound, 0);
 			break;
 		case SMITE:
 		case SLICE:
 			damage(boss_target, rules.spellpower(s, party[user]), NONE);
+			_mainState._game->audio()->playSound(_mainState._hitSound, 0);
 			break;
 		case PROTECT:
 			party[t].protector = user;
+			_mainState._game->audio()->playSound(_mainState._healSound, 0);
 			break;
 		case SWIPE:
 			damage(boss_target, rules.spellpower(s, party[user]), NONE);
 			for (unsigned i = 0 ; i < horde.size() ; i++)
 				damage(boss_target + i, rules.spellpower(s, party[user]), NONE);
+			_mainState._game->audio()->playSound(_mainState._hitSound, 0);
 			break;
 		case HEAL:
 			//TODO: Heal bad guys, if somehow targeted.
@@ -574,6 +592,7 @@ void Fight::play (Target user, Spell s, Target t)
 				party[t].hp += rules.spellpower(s, party[user]);
 				party[t].hp = min(party[t].hp, rules.max_hp(party[t]));
 			}
+			_mainState._game->audio()->playSound(_mainState._healSound, 0);
 			break;
 		case NURSE:
 			for (unsigned i = 0 ; i < rules.party_size ; i++)
@@ -581,12 +600,14 @@ void Fight::play (Target user, Spell s, Target t)
 				party[i].hp += rules.spellpower(s, party[user]);
 				party[i].hp = min(party[i].hp, rules.max_hp(party[i]));
 			}
+			_mainState._game->audio()->playSound(_mainState._healSound, 0);
 			break;
 		case REZ:
 			if (party[t].hp == 0) {
 				party[t].hp = rules.max_hp(party[t]) / 4;
 				_mainState.playRezAnim(t);
 			}
+			_mainState._game->audio()->playSound(_mainState._healSound, 0);
 			break;
 		case NUKES:
 		case NUKES + FIRE:
@@ -594,6 +615,7 @@ void Fight::play (Target user, Spell s, Target t)
 		case NUKES + SPARK:
 		case NUKES + ACID:
 			damage(t, rules.spellpower(s, party[user]), Element(s-NUKES));
+			_mainState._game->audio()->playSound(_mainState._spellSound, 0);
 			break;
 		case AOES:
 		case AOES + FIRE:
@@ -603,6 +625,7 @@ void Fight::play (Target user, Spell s, Target t)
 			damage(boss_target, rules.spellpower(s, party[user]), Element(s-AOES));
 			for (unsigned i = 0 ; i < horde.size() ; i++)
 				damage(boss_target + i, rules.spellpower(s, party[user]), Element(s-AOES));
+			_mainState._game->audio()->playSound(_mainState._spellSound, 0);
 			break;
 		case SHIELDS:
 		case SHIELDS + FIRE:
@@ -612,6 +635,7 @@ void Fight::play (Target user, Spell s, Target t)
 			//TODO: Increment protection properly iff not currently shielded.
 			if (t < boss_target)
 				party[t].resist[Element(s-SHIELDS)] = rules.spellpower(s, party[user]);
+			_mainState._game->audio()->playSound(_mainState._spellSound, 0);
 			break;
 		// Unimplemented.
 		default://TODO
@@ -723,6 +747,7 @@ void Fight::damage (Target t, unsigned amount, Element e)
 			//TODO: Implement resilience.
 			hp = 0;
 			_mainState.playDeathAnim(t);
+			_mainState._game->audio()->playSound(_mainState._pcDeathSound, 0);
 		}
 	}
 	else if (t == boss_target)
@@ -738,6 +763,7 @@ void Fight::damage (Target t, unsigned amount, Element e)
 		{
 			b.hp = 0;
 			_mainState.playDeathAnim(t);
+			_mainState._game->audio()->playSound(_mainState._bossDeathSound, 0);
 			//TODO: Kill his minions.
 		}
 	}
