@@ -130,6 +130,9 @@ void Game::initialize() {
 	_audio.reset(new SoundPlayer(this));
 	_audio->setMusicVolume(.2);
 
+	_screenState.reset(new ScreenState(this));
+	_screenState->initialize();
+
 	_mainState.reset(new MainState(this));
 	_mainState->initialize();
 }
@@ -138,6 +141,9 @@ void Game::initialize() {
 void Game::shutdown() {
 	_mainState->shutdown();
 	_mainState.reset();
+
+	_screenState->shutdown();
+	_screenState.reset();
 
 	_renderModule->shutdown();
 	_renderModule.reset();
@@ -171,6 +177,11 @@ void Game::quit() {
 	if(_currentState) {
 		_currentState->quit();
 	}
+}
+
+
+ScreenState* Game::screenState() {
+	return _screenState.get();
 }
 
 

@@ -57,6 +57,7 @@ add_executable(lof3
 	src/fight.cpp
 
 	src/game.cpp
+	src/screen_state.cpp
 	src/main_state.cpp
 	src/main.cpp
 )

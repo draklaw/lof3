@@ -788,6 +788,9 @@ void Fight::damage (Target t, unsigned amount, Element e)
 			b.hp = 0;
 			_mainState.playDeathAnim(t);
 			_mainState._game->audio()->playSound(_mainState._bossDeathSound, 0);
+
+			_mainState._game->setNextState(_mainState._game->screenState());
+			_mainState._game->screenState()->setBg("credits.png");
 			//TODO: Kill his minions.
 		}
 	}

@@ -18,16 +18,50 @@
 //
 
 
-#include "game.h"
+#ifndef _LOF3_SCREEN_STATE_H
+#define _LOF3_SCREEN_STATE_H
 
 
-int main(int /*argc*/, char** argv) {
-	Game game;
-	game.initialize();
+#include <lair/core/lair.h>
+#include <lair/core/log.h>
 
-	game.setNextState(game.screenState());
-	game.run();
+#include <lair/render_gl2/orthographic_camera.h>
 
-	game.shutdown();
-	return EXIT_SUCCESS;
-}
+#include <lair/ec/entity_manager.h>
+#include <lair/ec/sprite_component.h>
+
+#include "game_state.h"
+
+
+using namespace lair;
+
+
+class Game;
+
+class ScreenState : public GameState {
+public:
+	ScreenState(Game* game);
+
+	virtual void initialize();
+	virtual void shutdown();
+
+	virtual void run();
+	virtual void quit();
+
+	void setBg(const std::string& bg);
+
+protected:
+	Game* _game;
+
+	EntityManager _entities;
+	SpriteComponentManager _sprites;
+
+	bool _running;
+	OrthographicCamera _camera;
+	std::unique_ptr<Sprite> _sprite;
+
+	EntityRef _bg;
+};
+
+
+#endif

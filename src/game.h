@@ -36,6 +36,7 @@
 #include "sound_player.h"
 #include "main_state.h"
 
+#include "screen_state.h"
 #include "game_state.h"
 
 
@@ -64,6 +65,7 @@ public:
 	void run();
 	void quit();
 
+	ScreenState* screenState();
 	MainState* mainState();
 
 	Logger& log() { return _logger; }
@@ -90,6 +92,8 @@ protected:
 	GameState*    _nextState;
 	GameState*    _currentState;
 
+	std::unique_ptr<ScreenState>
+	              _screenState;
 	std::unique_ptr<MainState>
 	              _mainState;
 };
