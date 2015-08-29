@@ -49,7 +49,7 @@ MainState::MainState(Game* game)
       _fpsTime(0),
       _fpsCount(0),
 
-      _rules(log(), ""),
+      _rules(log()),
       _player{ {0}, {0}, {0,0,0,0,0,0,0,0,0,0,0,0,0}, 0, {0}, {0} },
       _fight(),
       _state(PLAYING),

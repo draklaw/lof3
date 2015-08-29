@@ -33,7 +33,14 @@ using namespace lair;
 
 #define NB_TIERS 3
 
+
 enum Element { NONE, FIRE, ICE, SPARK, ACID, NB_ELEMS };
+#define ELEMENTAL_ATTACK(_base) _base##_BASE,\
+	_base##_NONE  = _base##_BASE + NONE,\
+	_base##_FIRE  = _base##_BASE + FIRE,\
+	_base##_ICE   = _base##_BASE + ICE,\
+	_base##_SPARK = _base##_BASE + SPARK,\
+	_base##_ACID  = _base##_BASE + ACID
 
 enum Effect { DAMAGE, HP_BOOST, MP_BOOST, ELEM_DAMAGE, TENACITY, RESILIENCE,
 	AUTOREZ, HP_REGEN, MP_REGEN, NB_EFFECTS
@@ -46,8 +53,19 @@ struct Stuff {
 
 enum Job { FIGHTER, HEALER, WIZARD, NINJA, NB_JOBS };
 enum Status { SLOW, DISABLE, SILENCE, NB_STATUS };
-enum Spell { AA, SMITE, PROTECT, SLICE, SWIPE, HEAL, NURSE, REZ, NUKES,
-	AOES = NUKES+NB_ELEMS, SHIELDS = AOES+NB_ELEMS, NB_SPELLS = SHIELDS+NB_ELEMS
+enum Spell {
+	AA,
+	SMITE,
+	PROTECT,
+	SLICE,
+	SWIPE,
+	HEAL,
+	NURSE,
+	REZ,
+	ELEMENTAL_ATTACK(NUKES),
+	ELEMENTAL_ATTACK(AOES),
+	ELEMENTAL_ATTACK(SHIELDS),
+	NB_SPELLS
 };
 inline constexpr Spell operator+ (Spell s, Element e)
 {
@@ -76,8 +94,22 @@ struct Minion {
 	unsigned init; // Time to initiative
 };
 
-enum Curse { PUNCH, SWITCH, SCAN, STRIKE, STORM, VORPAL, CRIPPLE, DRAIN, MUD,
-	DISPEL, SUMMON, NB_CURSES = SUMMON + NB_SPAWNS
+enum Curse {
+	PUNCH,
+	SWITCH,
+	SCAN,
+	STRIKE,
+	STORM,
+	VORPAL,
+	CRIPPLE,
+	DRAIN,
+	MUD,
+	DISPEL,
+	SUMMON_BASE,
+	SUMMON_SPRITES  = SUMMON_BASE + SPRITES,
+	SUMMON_MAGELING = SUMMON_BASE + MAGELING,
+	SUMMON_TOMBERRY = SUMMON_BASE + TOMBERRY,
+	NB_CURSES
 };
 inline constexpr Curse operator+ (Curse c, Spawn s)
 { return Curse((unsigned) c + (unsigned) s); }
@@ -138,7 +170,7 @@ public:
 	unsigned max_summons;      // Maximum number of concurrent minions.
 	unsigned party_size;       // 4.
 
-	Rules(Logger& logger, const string& rules_source);
+	Rules(Logger& logger);
 	~Rules();
 
 	void setFromJson(const Json::Value& json);

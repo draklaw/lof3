@@ -201,13 +201,13 @@ bool Fight::can_haz (Curse c)
 		case VORPAL:
 		case DISPEL:
 			if (tier < 2) return false;
-		case SUMMON + TOMBERRY:
-		case SUMMON + SPRITES:
+		case SUMMON_TOMBERRY:
+		case SUMMON_SPRITES:
 		case STORM:
 		case MUD:
 		case SWITCH:
 			if (tier < 1) return false;
-		case SUMMON + MAGELING:
+		case SUMMON_MAGELING:
 		case CRIPPLE:
 		case DRAIN:
 		case STRIKE:
@@ -231,9 +231,9 @@ bool Fight::can_haz (Curse c, Target t)
 	switch (c)
 	{
 		// Untargeted spells.
-		case SUMMON + SPRITES:
-		case SUMMON + MAGELING:
-		case SUMMON + TOMBERRY:
+		case SUMMON_SPRITES:
+		case SUMMON_MAGELING:
+		case SUMMON_TOMBERRY:
 			// Don't get summonning sickness.
 			if (horde.size() == rules.max_summons)
 				return false;
@@ -361,10 +361,10 @@ void Fight::curse (Curse c, Target t)
 				party[t].resist[Element(elem)] = 0;
 			_mainState._game->audio()->playSound(_mainState._healSound, 0);
 			break;
-		case SUMMON+SPRITES:
-		case SUMMON+MAGELING:
-		case SUMMON+TOMBERRY:
-			s = Spawn(c - SUMMON);
+		case SUMMON_SPRITES:
+		case SUMMON_MAGELING:
+		case SUMMON_TOMBERRY:
+			s = Spawn(c - SUMMON_BASE);
 			horde.push_back({s,rules.minion_hp[s],e,rules.minion_init[s]});
 			break;
 		// Unimplemented.
@@ -458,17 +458,17 @@ void Fight::play_party (Target character)
 						clear status; */
 					//TODO: Improve shield targeting and element picking.
 					else if (player.strat[RAISE_SHIELD]
-					      && can_do(c, SHIELDS + (e = Element(rtd(NB_ELEMS))), w))
-						play(c, SHIELDS + e, w);
+					      && can_do(c, SHIELDS_BASE + (e = Element(rtd(NB_ELEMS))), w))
+						play(c, SHIELDS_BASE + e, w);
 					else
 						play (c, AA, t);
 					break;
 				case WIZARD:
 					if (nbt > AOE_THRESHOLD
-					 && can_do(c, AOES + (e = pick_elem(NOTARGET)), NOTARGET))
-						play (c, AOES + e, NOTARGET);
-					else if (can_do(c, NUKES + (e = pick_elem(t)), t))
-						play (c, NUKES + e, t);
+					 && can_do(c, AOES_BASE + (e = pick_elem(NOTARGET)), NOTARGET))
+						play (c, AOES_BASE + e, NOTARGET);
+					else if (can_do(c, NUKES_BASE + (e = pick_elem(t)), t))
+						play (c, NUKES_BASE + e, t);
 					else
 						play (c, AA, t);
 					break;
@@ -609,32 +609,32 @@ void Fight::play (Target user, Spell s, Target t)
 			}
 			_mainState._game->audio()->playSound(_mainState._healSound, 0);
 			break;
-		case NUKES:
-		case NUKES + FIRE:
-		case NUKES + ICE:
-		case NUKES + SPARK:
-		case NUKES + ACID:
-			damage(t, rules.spellpower(s, party[user]), Element(s-NUKES));
+		case NUKES_NONE:
+		case NUKES_FIRE:
+		case NUKES_ICE:
+		case NUKES_SPARK:
+		case NUKES_ACID:
+			damage(t, rules.spellpower(s, party[user]), Element(s-NUKES_BASE));
 			_mainState._game->audio()->playSound(_mainState._spellSound, 0);
 			break;
-		case AOES:
-		case AOES + FIRE:
-		case AOES + ICE:
-		case AOES + SPARK:
-		case AOES + ACID:
-			damage(boss_target, rules.spellpower(s, party[user]), Element(s-AOES));
+		case AOES_NONE:
+		case AOES_FIRE:
+		case AOES_ICE:
+		case AOES_SPARK:
+		case AOES_ACID:
+			damage(boss_target, rules.spellpower(s, party[user]), Element(s-AOES_BASE));
 			for (unsigned i = 0 ; i < horde.size() ; i++)
-				damage(boss_target + i, rules.spellpower(s, party[user]), Element(s-AOES));
+				damage(boss_target + i, rules.spellpower(s, party[user]), Element(s-AOES_BASE));
 			_mainState._game->audio()->playSound(_mainState._spellSound, 0);
 			break;
-		case SHIELDS:
-		case SHIELDS + FIRE:
-		case SHIELDS + ICE:
-		case SHIELDS + SPARK:
-		case SHIELDS + ACID:
+		case SHIELDS_NONE:
+		case SHIELDS_FIRE:
+		case SHIELDS_ICE:
+		case SHIELDS_SPARK:
+		case SHIELDS_ACID:
 			//TODO: Increment protection properly iff not currently shielded.
 			if (t < boss_target)
-				party[t].resist[Element(s-SHIELDS)] = rules.spellpower(s, party[user]);
+				party[t].resist[Element(s-SHIELDS_BASE)] = rules.spellpower(s, party[user]);
 			_mainState._game->audio()->playSound(_mainState._spellSound, 0);
 			break;
 		// Unimplemented.

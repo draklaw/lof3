@@ -32,7 +32,7 @@ void parseUnsigned(unsigned& value, const Json::Value& json) {
 }
 
 
-Rules::Rules(Logger& logger, const string& ruleset)
+Rules::Rules(Logger& logger)
 :	_logger(&logger),
 	hd{30,15,10,20},
 	mp{5,30,25,15},
@@ -105,23 +105,23 @@ void Rules::setFromJson(const Json::Value& json) {
 		setSpellFromJson(NURSE,           spells["nurse"]);
 		setSpellFromJson(REZ,             spells["rez"]);
 
-		setSpellFromJson(NUKES + NONE,  spells["nuke"]);
-		setSpellFromJson(NUKES + FIRE,  spells["nuke_elem"]);
-		setSpellFromJson(NUKES + ICE,   spells["nuke_elem"]);
-		setSpellFromJson(NUKES + SPARK, spells["nuke_elem"]);
-		setSpellFromJson(NUKES + ACID,  spells["nuke_elem"]);
+		setSpellFromJson(NUKES_NONE,  spells["nuke"]);
+		setSpellFromJson(NUKES_FIRE,  spells["nuke_elem"]);
+		setSpellFromJson(NUKES_ICE,   spells["nuke_elem"]);
+		setSpellFromJson(NUKES_SPARK, spells["nuke_elem"]);
+		setSpellFromJson(NUKES_ACID,  spells["nuke_elem"]);
 
-		setSpellFromJson(Spell(AOES + NONE),     spells["aoe"]);
-		setSpellFromJson(Spell(AOES + FIRE),     spells["aoe_elem"]);
-		setSpellFromJson(Spell(AOES + ICE),      spells["aoe_elem"]);
-		setSpellFromJson(Spell(AOES + SPARK),    spells["aoe_elem"]);
-		setSpellFromJson(Spell(AOES + ACID),     spells["aoe_elem"]);
+		setSpellFromJson(Spell(AOES_NONE),     spells["aoe"]);
+		setSpellFromJson(Spell(AOES_FIRE),     spells["aoe_elem"]);
+		setSpellFromJson(Spell(AOES_ICE),      spells["aoe_elem"]);
+		setSpellFromJson(Spell(AOES_SPARK),    spells["aoe_elem"]);
+		setSpellFromJson(Spell(AOES_ACID),     spells["aoe_elem"]);
 
-		setSpellFromJson(Spell(SHIELDS + NONE),  spells["shield"]);
-		setSpellFromJson(Spell(SHIELDS + FIRE),  spells["shield_elem"]);
-		setSpellFromJson(Spell(SHIELDS + ICE),   spells["shield_elem"]);
-		setSpellFromJson(Spell(SHIELDS + SPARK), spells["shield_elem"]);
-		setSpellFromJson(Spell(SHIELDS + ACID),  spells["shield_elem"]);
+		setSpellFromJson(Spell(SHIELDS_NONE),  spells["shield"]);
+		setSpellFromJson(Spell(SHIELDS_FIRE),  spells["shield_elem"]);
+		setSpellFromJson(Spell(SHIELDS_ICE),   spells["shield_elem"]);
+		setSpellFromJson(Spell(SHIELDS_SPARK), spells["shield_elem"]);
+		setSpellFromJson(Spell(SHIELDS_ACID),  spells["shield_elem"]);
 	}
 
 	const Json::Value& curses = json["curses"];
@@ -135,9 +135,9 @@ void Rules::setFromJson(const Json::Value& json) {
 		setCurseFromJson(MUD,     curses["mud"]);
 		setCurseFromJson(DISPEL,  curses["dispel"]);
 
-		setCurseFromJson(Curse(SUMMON + SPRITES),  curses["sprites"]);
-		setCurseFromJson(Curse(SUMMON + TOMBERRY),  curses["tomberry"]);
-		setCurseFromJson(Curse(SUMMON + MAGELING),  curses["mageling"]);
+		setCurseFromJson(Curse(SUMMON_SPRITES),  curses["sprites"]);
+		setCurseFromJson(Curse(SUMMON_TOMBERRY),  curses["tomberry"]);
+		setCurseFromJson(Curse(SUMMON_MAGELING),  curses["mageling"]);
 	}
 }
 
@@ -234,24 +234,24 @@ Spell Rules::base_spell (Spell s)
 {
 	switch (s)
 	{
-		case NUKES:
-		case NUKES + FIRE:
-		case NUKES + ICE:
-		case NUKES + SPARK:
-		case NUKES + ACID:
-			return NUKES;
-		case AOES:
-		case AOES + FIRE:
-		case AOES + ICE:
-		case AOES + SPARK:
-		case AOES + ACID:
-			return AOES;
-		case SHIELDS:
-		case SHIELDS + FIRE:
-		case SHIELDS + ICE:
-		case SHIELDS + SPARK:
-		case SHIELDS + ACID:
-			return SHIELDS;
+		case NUKES_NONE:
+		case NUKES_FIRE:
+		case NUKES_ICE:
+		case NUKES_SPARK:
+		case NUKES_ACID:
+			return NUKES_BASE;
+		case AOES_NONE:
+		case AOES_FIRE:
+		case AOES_ICE:
+		case AOES_SPARK:
+		case AOES_ACID:
+			return AOES_BASE;
+		case SHIELDS_NONE:
+		case SHIELDS_FIRE:
+		case SHIELDS_ICE:
+		case SHIELDS_SPARK:
+		case SHIELDS_ACID:
+			return SHIELDS_BASE;
 		default:
 			return s;
 	}
@@ -304,11 +304,11 @@ string Rules::name(Curse c, Element e)
 			return "lethal strike";
 		case DISPEL:
 			return "magical disjunction";
-		case SUMMON + SPRITES:
+		case SUMMON_SPRITES:
 			return "swarm of healing sprites";
-		case SUMMON + TOMBERRY:
+		case SUMMON_TOMBERRY:
 			return "deadly knifeling";
-		case SUMMON + MAGELING:
+		case SUMMON_MAGELING:
 			return "mageling minion against your foes";
 		default:
 			return adj + " MISSINGNO";
@@ -358,23 +358,23 @@ string Rules::name(Spell s)
 			return "\"summon wave of prancing nurses\"";
 		case REZ:
 			return "resurrection";
-		case NUKES:
-		case NUKES + FIRE:
-		case NUKES + ICE:
-		case NUKES + SPARK:
-		case NUKES + ACID:
+		case NUKES_NONE:
+		case NUKES_FIRE:
+		case NUKES_ICE:
+		case NUKES_SPARK:
+		case NUKES_ACID:
 			return adj + " ball";
-		case AOES:
-		case AOES + FIRE:
-		case AOES + ICE:
-		case AOES + SPARK:
-		case AOES + ACID:
+		case AOES_NONE:
+		case AOES_FIRE:
+		case AOES_ICE:
+		case AOES_SPARK:
+		case AOES_ACID:
 			return adj + " storm";
-		case SHIELDS:
-		case SHIELDS + FIRE:
-		case SHIELDS + ICE:
-		case SHIELDS + SPARK:
-		case SHIELDS + ACID:
+		case SHIELDS_NONE:
+		case SHIELDS_FIRE:
+		case SHIELDS_ICE:
+		case SHIELDS_SPARK:
+		case SHIELDS_ACID:
 			return adj + " shield";
 		default:
 			return "an unknown but possibly reality-threatening spell";
