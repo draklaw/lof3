@@ -17,39 +17,4 @@
 ##  along with lair.  If not, see <http://www.gnu.org/licenses/>.
 ##
 
-cmake_minimum_required(VERSION 2.8.12.1)
-
-project(lof3)
-
-set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
-
-
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-
-
-add_subdirectory(third-party)
-
-
-add_executable(lof3
-	src/frame.cpp
-	src/font.cpp
-	src/menu.cpp
-
-	src/text_component.cpp
-	src/animation_component.cpp
-	src/sound_player.cpp
-
-	src/rules.cpp
-	src/fight.cpp
-
-	src/game.cpp
-	src/screen_state.cpp
-	src/main_state.cpp
-	src/main.cpp
-)
-
-add_definitions(-D "'DATA_DIR=\"${CMAKE_CURRENT_SOURCE_DIR}/assets\"'")
-
-target_link_libraries(lof3
-	lair
-)
+add_subdirectory(lair)
