@@ -20,7 +20,7 @@
 #include <cstdlib>
 #include <iostream>
 
-#include <SDL2/SDL_mixer.h>
+#include <SDL_mixer.h>
 
 #include "game.h"
 

@@ -22,6 +22,8 @@
 #define _LOF3_GAME_H
 
 
+#include <fstream>
+
 #include <lair/core/lair.h>
 #include <lair/core/log.h>
 
@@ -45,7 +47,7 @@ using namespace lair;
 
 class Game {
 public:
-	Game();
+	Game(int argc, char** argv);
 	~Game();
 
 	Path dataPath() const;
@@ -73,7 +75,11 @@ public:
 
 protected:
 	MasterLogger  _mlogger;
-	OStreamLogger _logBackend;
+	std::ofstream _logStream;
+#ifndef _WIN32
+	OStreamLogger _stdlogBackend;
+#endif
+	OStreamLogger _fileBackend;
 	Logger        _logger;
 
 	Path          _dataPath;

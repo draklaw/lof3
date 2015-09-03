@@ -31,9 +31,13 @@
 #define DEFAULT_LOG_LEVEL LogLevel::Debug
 
 
-Game::Game()
+Game::Game(int argc, char** argv)
     : _mlogger(),
-      _logBackend(std::cerr, true),
+      _logStream("log.txt"),
+#ifndef _WIN32
+      _stdlogBackend(std::clog, true),
+#endif
+      _fileBackend(_logStream, false),
       _logger("game", &_mlogger, DEFAULT_LOG_LEVEL),
 
       _dataPath(),
@@ -50,20 +54,24 @@ Game::Game()
       _currentState(nullptr),
 
       _mainState(nullptr) {
-	_mlogger.addBackend(&_logBackend);
+#ifndef _WIN32
+	_mlogger.addBackend(&_stdlogBackend);
+#endif
+	_mlogger.addBackend(&_fileBackend);
 	dbgLogger.setMaster(&_mlogger);
 	dbgLogger.setDefaultModuleName("DEBUG");
 	dbgLogger.setLevel(LogLevel::Debug);
 
 	log().log("Starting game...");
 
-#ifdef DATA_DIR
-	_dataPath = boost::filesystem::canonical(DATA_DIR);
-#else
-	_dataPath = lair::exePath(argv[0]);
-#endif
+	const char* envPath = std::getenv("LOF3_DATA_DIR");
+	if (envPath) {
+		_dataPath = envPath;
+	} else {
+		_dataPath = lair::exePath(argv[0]) / "assets";
+	}
 
-	log().log("Data directory: ", _dataPath.native());
+	log().log("Data directory: ", _dataPath.string().c_str());
 }
 
 
@@ -103,7 +111,7 @@ SoundPlayer* Game::audio() {
 
 
 void Game::initialize() {
-	_sys.reset(new SysModule(&_mlogger, DEFAULT_LOG_LEVEL));
+	_sys.reset(new SysModule(&_mlogger, LogLevel::Log));
 	_sys->initialize();
 	_sys->onQuit = std::bind(&Game::quit, this);
 	_sys->loader().setNThread(1);

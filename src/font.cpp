@@ -18,6 +18,8 @@
 //
 
 
+#include <cctype>
+
 #include <lair/render_gl2/renderer.h>
 
 #include "font.h"

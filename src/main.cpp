@@ -21,8 +21,8 @@
 #include "game.h"
 
 
-int main(int /*argc*/, char** /*argv*/) {
-	Game game;
+int main(int argc, char** argv) {
+	Game game(argc, argv);
 	game.initialize();
 
 	game.setNextState(game.screenState());

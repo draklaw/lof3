@@ -24,11 +24,12 @@ project(lof3)
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-
-
 add_subdirectory(third-party)
 
+
+if(MSVC)
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /SUBSYSTEM:WINDOWS")
+endif()
 
 add_executable(lof3
 	src/frame.cpp
@@ -47,8 +48,6 @@ add_executable(lof3
 	src/main_state.cpp
 	src/main.cpp
 )
-
-add_definitions(-D "'DATA_DIR=\"${CMAKE_CURRENT_SOURCE_DIR}/assets\"'")
 
 target_link_libraries(lof3
 	lair

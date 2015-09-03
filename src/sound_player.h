@@ -20,7 +20,7 @@
 #ifndef _UW_SOUND_PLAYER_H_
 #define _UW_SOUND_PLAYER_H_
 
-#include <SDL2/SDL_mixer.h>
+#include <SDL_mixer.h>
 
 #include <string>
 #include <unordered_map>
