@@ -48,14 +48,14 @@ SoundPlayer::SoundPlayer(Game* game)
 }
 
 
-const Sound* SoundPlayer::loadSound(const std::string& filename) {
+const Sound* SoundPlayer::loadSound(const lair::Path& filename) {
 	auto it = _soundMap.find(filename);
 	if(it == _soundMap.end()) {
 		Sound snd;
 
 		_game->log().log("Load sound \"", filename, "\"...");
 
-		snd.chunk = Mix_LoadWAV(filename.c_str());
+		snd.chunk = Mix_LoadWAV(filename.utf8CStr());
 		if(!snd.chunk) {
 			_game->log().error("Failed to load sound: ", Mix_GetError());
 			return nullptr;
@@ -80,14 +80,14 @@ const Sound* SoundPlayer::loadSound(const std::string& filename) {
 }
 
 
-const Music* SoundPlayer::loadMusic(const std::string& filename) {
+const Music* SoundPlayer::loadMusic(const lair::Path& filename) {
 	auto it = _musicMap.find(filename);
 	if(it == _musicMap.end()) {
 		Music mus;
 
 		_game->log().log("Load music \"", filename, "\"...");
 
-		mus.track = Mix_LoadMUS(filename.c_str());
+		mus.track = Mix_LoadMUS(filename.utf8CStr());
 		if(!mus.track) {
 			_game->log().error("Failed to load music: ", Mix_GetError());
 			return nullptr;

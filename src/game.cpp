@@ -61,17 +61,6 @@ Game::Game(int argc, char** argv)
 	dbgLogger.setMaster(&_mlogger);
 	dbgLogger.setDefaultModuleName("DEBUG");
 	dbgLogger.setLevel(LogLevel::Debug);
-
-	log().log("Starting game...");
-
-	const char* envPath = std::getenv("LOF3_DATA_DIR");
-	if (envPath) {
-		_dataPath = envPath;
-	} else {
-		_dataPath = lair::exePath(argv[0]) / "assets";
-	}
-
-	log().log("Data directory: ", _dataPath.string().c_str());
 }
 
 
@@ -111,9 +100,20 @@ SoundPlayer* Game::audio() {
 
 
 void Game::initialize() {
+	log().log("Starting game...");
+
 	_sys.reset(new SysModule(&_mlogger, LogLevel::Log));
 	_sys->initialize();
 	_sys->onQuit = std::bind(&Game::quit, this);
+
+	const char* envPath = std::getenv("LOF3_DATA_DIR");
+	if (envPath) {
+		_dataPath = envPath;
+	} else {
+		_dataPath = _sys->basePath() / "assets";
+	}
+	log().log("Data directory: ", _dataPath);
+
 	_sys->loader().setNThread(1);
 	_sys->loader().setBasePath(dataPath());
 

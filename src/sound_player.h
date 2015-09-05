@@ -20,10 +20,13 @@
 #ifndef _UW_SOUND_PLAYER_H_
 #define _UW_SOUND_PLAYER_H_
 
-#include <SDL_mixer.h>
-
 #include <string>
 #include <unordered_map>
+
+#include <SDL_mixer.h>
+
+#include <lair/core/lair.h>
+#include <lair/core/path.h>
 
 
 #define SOUNDPLAYER_MAX_CHANNELS    32
@@ -41,7 +44,7 @@ public:
 	Mix_Chunk*   chunk;
 	unsigned     volume;
 
-	std::string  name;
+	lair::Path   name;
 	unsigned     useCount;
 };
 
@@ -53,7 +56,7 @@ public:
 public:
 	Mix_Music*   track;
 
-	std::string  name;
+	lair::Path   name;
 	unsigned     useCount;
 };
 
@@ -62,8 +65,8 @@ class SoundPlayer {
 public:
 	SoundPlayer(Game *game);
 
-	const Sound* loadSound(const std::string& filename);
-	const Music* loadMusic(const std::string& filename);
+	const Sound* loadSound(const lair::Path& filename);
+	const Music* loadMusic(const lair::Path& filename);
 
 	void releaseSound(const Sound* sound);
 	void releaseMusic(const Music* music);
@@ -77,8 +80,8 @@ public:
 	void setMusicVolume(float volume);
 
 private:
-	typedef std::unordered_map<std::string, Sound> SoundMap;
-	typedef std::unordered_map<std::string, Music> MusicMap;
+	typedef std::unordered_map<lair::Path, Sound> SoundMap;
+	typedef std::unordered_map<lair::Path, Music> MusicMap;
 
 private:
 	Game*    _game;

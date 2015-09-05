@@ -147,18 +147,18 @@ void MainState::initialize() {
 	_pcSprite[3]       = loadSprite("Ninja.png");
 	_tombSprite        = loadSprite("tomb.png");
 
-	_music1      = _game->audio()->loadMusic((_game->dataPath() / "music1.ogg").string().c_str());
-	_music2      = _game->audio()->loadMusic((_game->dataPath() / "music2.ogg").string().c_str());
-	_music3      = _game->audio()->loadMusic((_game->dataPath() / "music3.ogg").string().c_str());
-	_transition1 = _game->audio()->loadMusic((_game->dataPath() / "transition1.ogg").string().c_str());
-	_transition2 = _game->audio()->loadMusic((_game->dataPath() / "transition2.ogg").string().c_str());
+	_music1      = _game->audio()->loadMusic(_game->dataPath() / "music1.ogg");
+	_music2      = _game->audio()->loadMusic(_game->dataPath() / "music2.ogg");
+	_music3      = _game->audio()->loadMusic(_game->dataPath() / "music3.ogg");
+	_transition1 = _game->audio()->loadMusic(_game->dataPath() / "transition1.ogg");
+	_transition2 = _game->audio()->loadMusic(_game->dataPath() / "transition2.ogg");
 
-	_hitSound       = _game->audio()->loadSound((_game->dataPath() / "hit.ogg").string().c_str());
-	_spellSound     = _game->audio()->loadSound((_game->dataPath() / "spell.ogg").string().c_str());
-	_healSound      = _game->audio()->loadSound((_game->dataPath() / "heal.ogg").string().c_str());
-	_pcDeathSound   = _game->audio()->loadSound((_game->dataPath() / "death_pc.ogg").string().c_str());
-	_bossDeathSound = _game->audio()->loadSound((_game->dataPath() / "death_boss.ogg").string().c_str());
-	_victorySound   = _game->audio()->loadSound((_game->dataPath() / "boss_victory.ogg").string().c_str());
+	_hitSound       = _game->audio()->loadSound(_game->dataPath() / "hit.ogg");
+	_spellSound     = _game->audio()->loadSound(_game->dataPath() / "spell.ogg");
+	_healSound      = _game->audio()->loadSound(_game->dataPath() / "heal.ogg");
+	_pcDeathSound   = _game->audio()->loadSound(_game->dataPath() / "death_pc.ogg");
+	_bossDeathSound = _game->audio()->loadSound(_game->dataPath() / "death_boss.ogg");
+	_victorySound   = _game->audio()->loadSound(_game->dataPath() / "boss_victory.ogg");
 
 	_damageAnim.reset(new MoveAnim(ONE_SEC/2, Vector3(0, 30, 0), RELATIVE));
 	_damageAnim->onEnd = [this](_Entity* e){ _entities.destroyEntity(EntityRef(e)); };
