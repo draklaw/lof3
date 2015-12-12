@@ -1,3 +1,5 @@
 # Lord of Fantasy III
 
-Ludum Dare 33 WiP.
+A Ludum Dare 33 game.
+
+
